@@ -256,12 +256,7 @@ export default function RateManagement() {
   const handleResearch = async () => {
     setIsResearching(true);
     try {
-      const response = await fetch("/api/admin/rates/research", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ draftRates }),
-        credentials: "include",
-      });
+      const response = await apiRequest("POST", "/api/admin/rates/research", { draftRates });
       if (!response.ok) throw new Error("Research failed");
       const report = await response.json();
       setResearchReport(report);

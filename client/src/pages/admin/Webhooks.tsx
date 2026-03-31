@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 import {
   Table,
   TableBody,
@@ -80,18 +81,15 @@ export default function Webhooks() {
 
   const { data: webhooks, isLoading } = useQuery({
     queryKey: ["/api/admin/webhooks"],
-    queryFn: async () => {
-      const response = await fetch("/api/admin/webhooks");
-      if (!response.ok) throw new Error("Failed to fetch webhooks");
-      return response.json();
-    },
   });
 
   const { data: deliveries, isLoading: deliveriesLoading } = useQuery({
     queryKey: ["/api/admin/webhook-deliveries", selectedWebhook?.id],
     queryFn: async () => {
       if (!selectedWebhook) return [];
-      const response = await fetch(`/api/admin/webhooks/${selectedWebhook.id}/deliveries`);
+      const response = await fetch(`/api/admin/webhooks/${selectedWebhook.id}/deliveries`, {
+        credentials: "include",
+      });
       if (!response.ok) throw new Error("Failed to fetch deliveries");
       return response.json();
     },
@@ -100,15 +98,7 @@ export default function Webhooks() {
 
   const createMutation = useMutation({
     mutationFn: async (data: { platform: string; url: string; events: string[] }) => {
-      const response = await fetch("/api/admin/webhooks/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Failed to create webhook");
-      }
+      const response = await apiRequest("POST", "/api/admin/webhooks/register", data);
       return response.json();
     },
     onSuccess: (data) => {
@@ -134,10 +124,7 @@ export default function Webhooks() {
 
   const testMutation = useMutation({
     mutationFn: async (id: string) => {
-      const response = await fetch(`/api/admin/webhooks/${id}/test`, {
-        method: "POST",
-      });
-      if (!response.ok) throw new Error("Failed to test webhook");
+      const response = await apiRequest("POST", `/api/admin/webhooks/${id}/test`);
       return response.json();
     },
     onSuccess: (data) => {
@@ -158,10 +145,7 @@ export default function Webhooks() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const response = await fetch(`/api/admin/webhooks/${id}`, {
-        method: "DELETE",
-      });
-      if (!response.ok) throw new Error("Failed to delete webhook");
+      const response = await apiRequest("DELETE", `/api/admin/webhooks/${id}`);
       return response.json();
     },
     onSuccess: () => {

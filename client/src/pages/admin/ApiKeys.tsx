@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 import {
   Table,
   TableBody,
@@ -68,24 +69,11 @@ export default function ApiKeys() {
 
   const { data: apiKeys, isLoading } = useQuery({
     queryKey: ["/api/v1/api-keys"],
-    queryFn: async () => {
-      const response = await fetch("/api/v1/api-keys");
-      if (!response.ok) throw new Error("Failed to fetch API keys");
-      return response.json();
-    },
   });
 
   const createMutation = useMutation({
     mutationFn: async (data: { platform: string; name: string; permissions: string[] }) => {
-      const response = await fetch("/api/v1/api-keys/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Failed to create API key");
-      }
+      const response = await apiRequest("POST", "/api/v1/api-keys/create", data);
       return response.json();
     },
     onSuccess: (data) => {
@@ -111,10 +99,7 @@ export default function ApiKeys() {
 
   const deactivateMutation = useMutation({
     mutationFn: async (id: string) => {
-      const response = await fetch(`/api/v1/api-keys/${id}`, {
-        method: "DELETE",
-      });
-      if (!response.ok) throw new Error("Failed to deactivate API key");
+      const response = await apiRequest("DELETE", `/api/v1/api-keys/${id}`);
       return response.json();
     },
     onSuccess: () => {

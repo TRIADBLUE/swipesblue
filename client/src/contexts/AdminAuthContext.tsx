@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { apiRequest } from "@/lib/queryClient";
 
 interface AdminAuthContextType {
   isAuthenticated: boolean;
@@ -37,25 +38,9 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (username: string, password: string): Promise<boolean> => {
     try {
-      // Fetch CSRF token first
-      const csrfResponse = await fetch("/api/csrf-token", { credentials: "include" });
-      const csrfData = await csrfResponse.json();
-
-      const response = await fetch("/api/admin/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-csrf-token": csrfData.token,
-        },
-        credentials: "include",
-        body: JSON.stringify({ username, password }),
-      });
-      
-      if (response.ok) {
-        setIsAuthenticated(true);
-        return true;
-      }
-      return false;
+      await apiRequest("POST", "/api/admin/auth/login", { username, password });
+      setIsAuthenticated(true);
+      return true;
     } catch {
       return false;
     }
@@ -63,14 +48,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     try {
-      const csrfResponse = await fetch("/api/csrf-token", { credentials: "include" });
-      const csrfData = await csrfResponse.json();
-
-      await fetch("/api/admin/auth/logout", {
-        method: "POST",
-        headers: { "x-csrf-token": csrfData.token },
-        credentials: "include",
-      });
+      await apiRequest("POST", "/api/admin/auth/logout");
     } finally {
       setIsAuthenticated(false);
     }

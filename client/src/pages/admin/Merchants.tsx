@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 import {
   Table,
   TableBody,
@@ -52,21 +53,11 @@ export default function Merchants() {
 
   const { data: merchants, isLoading } = useQuery({
     queryKey: ["/api/v1/merchants"],
-    queryFn: async () => {
-      const response = await fetch("/api/v1/merchants");
-      if (!response.ok) throw new Error("Failed to fetch merchants");
-      return response.json();
-    },
   });
 
   const updateStatusMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
-      const response = await fetch(`/api/v1/merchants/${id}/status`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status }),
-      });
-      if (!response.ok) throw new Error("Failed to update status");
+      const response = await apiRequest("PATCH", `/api/v1/merchants/${id}/status`, { status });
       return response.json();
     },
     onSuccess: () => {

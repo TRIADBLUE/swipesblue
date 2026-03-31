@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 import {
   Table,
   TableBody,
@@ -64,24 +65,11 @@ export default function AdminTransactions() {
 
   const { data: transactions, isLoading } = useQuery({
     queryKey: ["/api/admin/transactions"],
-    queryFn: async () => {
-      const response = await fetch("/api/admin/transactions");
-      if (!response.ok) throw new Error("Failed to fetch transactions");
-      return response.json();
-    },
   });
 
   const refundMutation = useMutation({
     mutationFn: async ({ transactionId, amount, reason }: { transactionId: string; amount?: number; reason?: string }) => {
-      const response = await fetch("/api/v1/payments/refund", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ transactionId, amount, reason }),
-      });
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Failed to process refund");
-      }
+      const response = await apiRequest("POST", "/api/v1/payments/refund", { transactionId, amount, reason });
       return response.json();
     },
     onSuccess: () => {

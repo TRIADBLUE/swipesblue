@@ -85,29 +85,14 @@ function StatCard({
 export default function AdminDashboard() {
   const { data: metrics, isLoading: metricsLoading } = useQuery({
     queryKey: ["/api/admin/metrics"],
-    queryFn: async () => {
-      const response = await fetch("/api/admin/metrics");
-      if (!response.ok) throw new Error("Failed to fetch metrics");
-      return response.json();
-    },
   });
 
   const { data: recentTransactions, isLoading: transactionsLoading } = useQuery({
     queryKey: ["/api/admin/transactions/recent"],
-    queryFn: async () => {
-      const response = await fetch("/api/admin/transactions/recent");
-      if (!response.ok) throw new Error("Failed to fetch transactions");
-      return response.json();
-    },
   });
 
   const { data: volumeData, isLoading: volumeLoading } = useQuery({
     queryKey: ["/api/admin/volume"],
-    queryFn: async () => {
-      const response = await fetch("/api/admin/volume");
-      if (!response.ok) throw new Error("Failed to fetch volume data");
-      return response.json();
-    },
   });
 
   const platformBreakdown = metrics?.platformBreakdown || [
