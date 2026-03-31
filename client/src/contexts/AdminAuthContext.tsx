@@ -37,9 +37,16 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (username: string, password: string): Promise<boolean> => {
     try {
+      // Fetch CSRF token first
+      const csrfResponse = await fetch("/api/csrf-token", { credentials: "include" });
+      const csrfData = await csrfResponse.json();
+
       const response = await fetch("/api/admin/auth/login", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-csrf-token": csrfData.token,
+        },
         credentials: "include",
         body: JSON.stringify({ username, password }),
       });
@@ -56,8 +63,12 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     try {
+      const csrfResponse = await fetch("/api/csrf-token", { credentials: "include" });
+      const csrfData = await csrfResponse.json();
+
       await fetch("/api/admin/auth/logout", {
         method: "POST",
+        headers: { "x-csrf-token": csrfData.token },
         credentials: "include",
       });
     } finally {
