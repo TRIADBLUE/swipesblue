@@ -83,6 +83,7 @@ import Reporting from "@/pages/dashboard/Reporting";
 import SettingsPage from "@/pages/dashboard/SettingsPage";
 
 import { AdminAuthProvider, useAdminAuth } from "@/contexts/AdminAuthContext";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ReactNode } from "react";
 
 function ProtectedAdminRoute({ children }: { children: ReactNode }) {
@@ -484,14 +485,16 @@ function AppLayout() {
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <AdminAuthProvider>
-          <AppLayout />
-          <Toaster />
-        </AdminAuthProvider>
-      </TooltipProvider>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <AdminAuthProvider>
+            <AppLayout />
+            <Toaster />
+          </AdminAuthProvider>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
 
