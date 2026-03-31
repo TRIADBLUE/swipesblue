@@ -1854,7 +1854,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/v1/api-keys/create", apiLimiter, requireAdmin, async (req, res) => {
     try {
       const apiKeySchema = z.object({
-        platform: z.enum(["businessblueprint", "hostsblue", "swipesblue", "internal"]),
+        platform: z.enum(["businessblueprint", "hostsblue", "swipesblue", "scansblue", "internal"]),
         name: z.string().min(1, "Name is required"),
         permissions: z.array(z.string()).default(["*"]),
         metadata: z.record(z.any()).optional(),
