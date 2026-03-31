@@ -1905,16 +1905,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const keys = await storage.getAllApiKeys();
 
-      // Remove sensitive data
+      // Remove sensitive data, return masked key prefix for identification
       const sanitizedKeys = keys.map(key => ({
         id: key.id,
         platform: key.platform,
         name: key.name,
+        apiKey: key.apiKey ? `${key.apiKey.slice(0, 12)}${"•".repeat(20)}` : "",
         isActive: key.isActive,
         permissions: key.permissions,
         lastUsedAt: key.lastUsedAt,
         createdAt: key.createdAt,
-        // Don't return apiKey or apiSecret
       }));
 
       res.json(sanitizedKeys);

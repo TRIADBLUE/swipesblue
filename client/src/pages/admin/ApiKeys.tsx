@@ -157,6 +157,7 @@ export default function ApiKeys() {
   };
 
   const maskKey = (key: string) => {
+    if (!key) return "••••••••••••";
     if (key.length <= 12) return key;
     return `${key.slice(0, 12)}${"•".repeat(20)}`;
   };
