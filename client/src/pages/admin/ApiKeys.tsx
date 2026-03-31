@@ -330,6 +330,7 @@ export default function ApiKeys() {
                   <SelectItem value="businessblueprint">businessblueprint</SelectItem>
                   <SelectItem value="hostsblue">hostsblue</SelectItem>
                   <SelectItem value="swipesblue">swipesblue</SelectItem>
+                  <SelectItem value="scansblue">scansblue</SelectItem>
                   <SelectItem value="internal">Internal</SelectItem>
                 </SelectContent>
               </Select>

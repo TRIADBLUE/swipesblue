@@ -349,7 +349,7 @@ export const apiKeys = pgTable("api_keys", {
   id: varchar("id")
     .primaryKey()
     .default(sql`gen_random_uuid()`),
-  platform: text("platform").notNull(), // 'businessblueprint' | 'hostsblue' | 'swipesblue' | 'internal'
+  platform: text("platform").notNull(), // 'businessblueprint' | 'hostsblue' | 'swipesblue' | 'scansblue' | 'internal'
   name: text("name").notNull(), // Friendly name for the key
   apiKey: text("api_key").notNull().unique(), // The actual API key (hashed in production)
   apiSecret: text("api_secret"), // Optional secret for HMAC signing

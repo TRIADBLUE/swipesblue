@@ -213,6 +213,7 @@ export default function AdminTransactions() {
                 <SelectItem value="businessblueprint">businessblueprint</SelectItem>
                 <SelectItem value="hostsblue">hostsblue</SelectItem>
                 <SelectItem value="swipesblue">swipesblue</SelectItem>
+                <SelectItem value="scansblue">scansblue</SelectItem>
               </SelectContent>
             </Select>
 
