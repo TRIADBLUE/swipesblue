@@ -1,422 +1,137 @@
-import { useState, useEffect } from "react";
 import { useParams } from "wouter";
-import {
-  Elements,
-  PaymentElement,
-  useStripe,
-  useElements,
-} from "@stripe/react-stripe-js";
-import { loadStripe } from "@stripe/stripe-js";
-
-interface SessionData {
-  id: string;
-  amount: number;
-  currency: string;
-  description: string;
-  customerEmail: string;
-  status: string;
-  clientSecret: string;
-  successUrl: string;
-  cancelUrl: string;
-}
-
-function PaymentForm({
-  session,
-  onSuccess,
-}: {
-  session: SessionData;
-  onSuccess: () => void;
-}) {
-  const stripe = useStripe();
-  const elements = useElements();
-  const [processing, setProcessing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!stripe || !elements) return;
-
-    setProcessing(true);
-    setError(null);
-
-    const result = await stripe.confirmPayment({
-      elements,
-      confirmParams: {
-        return_url: session.successUrl.replace("{SESSION_ID}", session.id),
-        receipt_email: session.customerEmail,
-      },
-    });
-
-    if (result.error) {
-      setError(result.error.message || "Payment failed. Please try again.");
-      setProcessing(false);
-    } else {
-      onSuccess();
-    }
-  };
-
-  const formatAmount = (cents: number, currency: string) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: currency.toUpperCase(),
-    }).format(cents / 100);
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="pay-form">
-      <div className="pay-summary">
-        <p className="pay-description">{session.description}</p>
-        <p className="pay-amount">
-          {formatAmount(session.amount, session.currency)}
-        </p>
-      </div>
-
-      <div className="pay-email">
-        <span className="pay-email-label">Email</span>
-        <span className="pay-email-value">{session.customerEmail}</span>
-      </div>
-
-      <div className="pay-element-container">
-        <PaymentElement />
-      </div>
-
-      {error && <div className="pay-error">{error}</div>}
-
-      <button
-        type="submit"
-        disabled={!stripe || processing}
-        className="pay-submit"
-      >
-        {processing
-          ? "Processing..."
-          : `Pay ${formatAmount(session.amount, session.currency)}`}
-      </button>
-
-      <button
-        type="button"
-        onClick={() => {
-          window.location.href = session.cancelUrl;
-        }}
-        className="pay-cancel"
-      >
-        Cancel
-      </button>
-    </form>
-  );
-}
+import { useQuery } from "@tanstack/react-query";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Loader2, CreditCard, Lock } from "lucide-react";
+import Logo from "@/components/Logo";
+import { useState } from "react";
 
 export default function Pay() {
-  const params = useParams<{ sessionId: string }>();
-  const [session, setSession] = useState<SessionData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [completed, setCompleted] = useState(false);
-  const [stripePromise, setStripePromise] = useState<ReturnType<
-    typeof loadStripe
-  > | null>(null);
+  const { sessionId } = useParams<{ sessionId: string }>();
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  useEffect(() => {
-    // Load Stripe with the publishable key injected server-side
-    const key = (window as any).__STRIPE_PUBLISHABLE_KEY__;
-    if (key) {
-      setStripePromise(loadStripe(key));
-    }
-  }, []);
+  const { data: session, isLoading, error } = useQuery({
+    queryKey: ["/api/payment-sessions", sessionId],
+    enabled: !!sessionId,
+  });
 
-  useEffect(() => {
-    async function fetchSession() {
-      try {
-        const response = await fetch(
-          `/api/v1/checkout/sessions/${params.sessionId}`,
-        );
-        if (!response.ok) {
-          if (response.status === 404) {
-            setError("This payment session has expired or was already completed.");
-          } else {
-            setError("Failed to load payment session.");
-          }
-          return;
-        }
-        const data = await response.json();
-        setSession(data);
-      } catch {
-        setError("Failed to load payment session.");
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchSession();
-  }, [params.sessionId]);
-
-  const handleSuccess = () => {
-    setCompleted(true);
-
-    // Notify parent iframe
-    try {
-      window.parent.postMessage(
-        {
-          event: "payment.completed",
-          sessionId: params.sessionId,
-        },
-        "*",
-      );
-    } catch {
-      // Not in an iframe — no-op
-    }
-  };
-
-  if (loading) {
+  if (isLoading) {
     return (
-      <div className="pay-container">
-        <div className="pay-card">
-          <div className="pay-loading">Loading payment details...</div>
-        </div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-[#1844A6]" />
       </div>
     );
   }
 
-  if (error) {
+  if (error || !session) {
     return (
-      <div className="pay-container">
-        <div className="pay-card">
-          <div className="pay-error-page">
-            <h2>Payment Unavailable</h2>
-            <p>{error}</p>
-          </div>
-        </div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md rounded-[7px]">
+          <CardContent className="p-8 text-center">
+            <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Lock className="h-6 w-6 text-red-600" />
+            </div>
+            <h2 className="text-xl font-bold text-gray-900 mb-2">Payment session not found</h2>
+            <p className="text-gray-600 text-sm">
+              This payment link may have expired or is invalid. Please contact the merchant for a new link.
+            </p>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
-  if (completed) {
-    return (
-      <div className="pay-container">
-        <div className="pay-card">
-          <div className="pay-success">
-            <div className="pay-success-icon">&#10003;</div>
-            <h2>Payment Successful</h2>
-            <p>Your payment has been processed. You will be redirected shortly.</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!session || !stripePromise) {
-    return (
-      <div className="pay-container">
-        <div className="pay-card">
-          <div className="pay-loading">Initializing payment...</div>
-        </div>
-      </div>
-    );
-  }
+  const amount = (session as any)?.amount ?? 0;
+  const currency = (session as any)?.currency ?? "USD";
+  const merchantName = (session as any)?.merchantName ?? "Merchant";
 
   return (
-    <div className="pay-container">
-      <div className="pay-card">
-        <div className="pay-header">
-          <div className="pay-logo">
-            <span className="pay-logo-slash">/</span>
-            <span className="pay-logo-text">swipesblue</span>
-          </div>
-          <span className="pay-secure">Secure Checkout</span>
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      <header className="bg-white border-b border-gray-100 py-4">
+        <div className="max-w-7xl mx-auto px-4 flex items-center justify-center">
+          <Logo showIcon variant="default" />
         </div>
+      </header>
 
-        <Elements
-          stripe={stripePromise}
-          options={{
-            clientSecret: session.clientSecret,
-            appearance: {
-              theme: "stripe",
-              variables: {
-                colorPrimary: "#09080E",
-                fontFamily: "Archivo, system-ui, sans-serif",
-              },
-            },
-          }}
-        >
-          <PaymentForm session={session} onSuccess={handleSuccess} />
-        </Elements>
+      <main className="flex-1 flex items-center justify-center p-4 py-12">
+        <div className="w-full max-w-md">
+          <Card className="border border-gray-200 rounded-[7px] shadow-sm">
+            <CardContent className="p-6">
+              <div className="text-center mb-6">
+                <p className="text-sm text-gray-500 mb-1">Pay {merchantName}</p>
+                <p className="text-3xl font-bold text-gray-900">
+                  ${(amount / 100).toFixed(2)} <span className="text-sm font-normal text-gray-500 uppercase">{currency}</span>
+                </p>
+              </div>
 
-        <div className="pay-footer">
-          <p>Powered by swipesblue.com</p>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  setIsProcessing(true);
+                }}
+                className="space-y-4"
+              >
+                <div>
+                  <Label htmlFor="card-number">Card number</Label>
+                  <div className="relative mt-1">
+                    <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Input
+                      id="card-number"
+                      placeholder="1234 5678 9012 3456"
+                      className="pl-10 rounded-[7px]"
+                      data-testid="input-pay-card-number"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="expiry">Expiration</Label>
+                    <Input
+                      id="expiry"
+                      placeholder="MM / YY"
+                      className="mt-1 rounded-[7px]"
+                      data-testid="input-pay-expiry"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="cvc">CVC</Label>
+                    <Input
+                      id="cvc"
+                      placeholder="123"
+                      className="mt-1 rounded-[7px]"
+                      data-testid="input-pay-cvc"
+                    />
+                  </div>
+                </div>
+
+                <Button
+                  type="submit"
+                  className="w-full bg-[#1844A6] text-white rounded-[7px]"
+                  disabled={isProcessing}
+                  data-testid="button-pay-submit"
+                >
+                  {isProcessing ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    `Pay $${(amount / 100).toFixed(2)}`
+                  )}
+                </Button>
+              </form>
+
+              <div className="mt-4 flex items-center justify-center gap-1 text-xs text-gray-400">
+                <Lock className="h-3 w-3" />
+                <span>Secured by SwipesBlue</span>
+              </div>
+            </CardContent>
+          </Card>
         </div>
-      </div>
-
-      <style>{`
-        .pay-container {
-          min-height: 100vh;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background: #f6f9fc;
-          padding: 20px;
-          font-family: Archivo, system-ui, sans-serif;
-        }
-        .pay-card {
-          background: white;
-          border-radius: 12px;
-          box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-          max-width: 480px;
-          width: 100%;
-          padding: 32px;
-        }
-        .pay-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 24px;
-          padding-bottom: 16px;
-          border-bottom: 1px solid #e5e7eb;
-        }
-        .pay-logo {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          font-size: 18px;
-          font-weight: 600;
-        }
-        .pay-logo-slash {
-          color: #09080E;
-          font-weight: 700;
-        }
-        .pay-logo-text {
-          color: #09080E;
-        }
-        .pay-secure {
-          font-size: 12px;
-          color: #6b7280;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-        }
-        .pay-summary {
-          text-align: center;
-          margin-bottom: 24px;
-        }
-        .pay-description {
-          color: #374151;
-          font-size: 16px;
-          margin: 0 0 8px 0;
-        }
-        .pay-amount {
-          font-size: 32px;
-          font-weight: 700;
-          color: #09080E;
-          margin: 0;
-        }
-        .pay-email {
-          display: flex;
-          justify-content: space-between;
-          padding: 12px 0;
-          border-top: 1px solid #f3f4f6;
-          border-bottom: 1px solid #f3f4f6;
-          margin-bottom: 20px;
-          font-size: 14px;
-        }
-        .pay-email-label {
-          color: #6b7280;
-        }
-        .pay-email-value {
-          color: #111827;
-        }
-        .pay-element-container {
-          margin-bottom: 20px;
-        }
-        .pay-error {
-          background: #fef2f2;
-          color: #dc2626;
-          padding: 12px;
-          border-radius: 8px;
-          font-size: 14px;
-          margin-bottom: 16px;
-        }
-        .pay-submit {
-          width: 100%;
-          padding: 14px;
-          background: #09080E;
-          color: white;
-          border: none;
-          border-radius: 8px;
-          font-size: 16px;
-          font-weight: 600;
-          cursor: pointer;
-          margin-bottom: 8px;
-          font-family: inherit;
-        }
-        .pay-submit:hover:not(:disabled) {
-          background: #1a1a2e;
-        }
-        .pay-submit:disabled {
-          opacity: 0.6;
-          cursor: not-allowed;
-        }
-        .pay-cancel {
-          width: 100%;
-          padding: 12px;
-          background: transparent;
-          color: #6b7280;
-          border: 1px solid #e5e7eb;
-          border-radius: 8px;
-          font-size: 14px;
-          cursor: pointer;
-          font-family: inherit;
-        }
-        .pay-cancel:hover {
-          background: #f9fafb;
-        }
-        .pay-footer {
-          text-align: center;
-          margin-top: 20px;
-          padding-top: 16px;
-          border-top: 1px solid #f3f4f6;
-        }
-        .pay-footer p {
-          font-size: 12px;
-          color: #9ca3af;
-          margin: 0;
-        }
-        .pay-loading {
-          text-align: center;
-          padding: 40px;
-          color: #6b7280;
-          font-size: 14px;
-        }
-        .pay-error-page {
-          text-align: center;
-          padding: 20px;
-        }
-        .pay-error-page h2 {
-          color: #111827;
-          margin-bottom: 8px;
-        }
-        .pay-error-page p {
-          color: #6b7280;
-        }
-        .pay-success {
-          text-align: center;
-          padding: 20px;
-        }
-        .pay-success-icon {
-          width: 48px;
-          height: 48px;
-          background: #10b981;
-          color: white;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 24px;
-          margin: 0 auto 16px;
-        }
-        .pay-success h2 {
-          color: #111827;
-          margin-bottom: 8px;
-        }
-        .pay-success p {
-          color: #6b7280;
-        }
-      `}</style>
+      </main>
     </div>
   );
 }

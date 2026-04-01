@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -10,83 +9,50 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Mail, Lock, User, Building, Eye, EyeOff, Check, Loader2 } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, Loader2, User, Building2 } from "lucide-react";
 import Logo from "@/components/Logo";
-import { registerMerchantSchema } from "@shared/schema";
-
-const passwordRequirements = [
-  { id: "length", label: "At least 8 characters", test: (p: string) => p.length >= 8 },
-  { id: "uppercase", label: "One uppercase letter", test: (p: string) => /[A-Z]/.test(p) },
-  { id: "lowercase", label: "One lowercase letter", test: (p: string) => /[a-z]/.test(p) },
-  { id: "number", label: "One number", test: (p: string) => /\d/.test(p) },
-];
-
-const registerFormSchema = registerMerchantSchema.extend({
-  confirmPassword: z.string().min(1, "Please confirm your password"),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords do not match",
-  path: ["confirmPassword"],
-});
-
-type RegisterFormValues = z.infer<typeof registerFormSchema>;
-
-const pathHeadings: Record<string, { title: string; subtitle: string }> = {
-  ecommerce: { title: "Start selling in minutes", subtitle: "Create your free swipesblue account and launch your store today." },
-  developer: { title: "Get your sandbox credentials", subtitle: "Create your free account and start testing the swipesblue API." },
-  gateway: { title: "Start processing payments", subtitle: "Create your free account and replace your current processor." },
-};
+import { registerMerchantSchema, type RegisterMerchantInput } from "@shared/schema";
 
 export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [, setLocation] = useLocation();
   const { toast } = useToast();
 
-  // Read signup path from URL query param
-  const searchParams = new URLSearchParams(window.location.search);
-  const signupPath = (searchParams.get("path") || "ecommerce") as "ecommerce" | "developer" | "gateway";
-  const heading = pathHeadings[signupPath] || pathHeadings.ecommerce;
-
-  const form = useForm<RegisterFormValues>({
-    resolver: zodResolver(registerFormSchema),
+  const form = useForm<RegisterMerchantInput>({
+    resolver: zodResolver(registerMerchantSchema),
     defaultValues: {
-      businessName: "",
-      fullName: "",
       email: "",
       password: "",
-      confirmPassword: "",
+      businessName: "",
+      fullName: "",
+      signupPath: "ecommerce",
     },
   });
 
   const registerMutation = useMutation({
-    mutationFn: async (data: RegisterFormValues) => {
-      const { confirmPassword, ...registerData } = data;
-      const response = await apiRequest("POST", "/api/auth/register", {
-        ...registerData,
-        signupPath,
-      });
+    mutationFn: async (data: RegisterMerchantInput) => {
+      const response = await apiRequest("POST", "/api/auth/register", data);
       return response.json();
     },
     onSuccess: () => {
       toast({
         title: "Account created!",
-        description: "Welcome to swipesblue. You're ready to start accepting payments.",
+        description: "Welcome to SwipesBlue. You can now sign in.",
       });
-      setLocation("/dashboard");
+      setLocation("/login");
     },
     onError: (error: Error) => {
       toast({
         title: "Registration failed",
-        description: error.message || "Please try again",
+        description: error.message || "Could not create your account",
         variant: "destructive",
       });
     },
   });
 
-  const onSubmit = (data: RegisterFormValues) => {
+  const onSubmit = (data: RegisterMerchantInput) => {
     registerMutation.mutate(data);
   };
-
-  const watchedPassword = form.watch("password");
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -101,36 +67,14 @@ export default function Register() {
       <main className="flex-1 flex items-center justify-center p-4 py-12">
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">{heading.title}</h1>
-            <p className="text-gray-600">{heading.subtitle}</p>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">Create your account</h1>
+            <p className="text-gray-600">Start accepting payments with swipesblue</p>
           </div>
 
           <Card className="border border-gray-200 rounded-[7px] shadow-sm">
             <CardContent className="p-6">
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="businessName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Business name</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <Building className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                            <Input
-                              placeholder="Your Business LLC"
-                              className="pl-10 rounded-[7px]"
-                              data-testid="input-register-business-name"
-                              {...field}
-                            />
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
                   <FormField
                     control={form.control}
                     name="fullName"
@@ -141,9 +85,11 @@ export default function Register() {
                           <div className="relative">
                             <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                             <Input
-                              placeholder="John Smith"
+                              type="text"
+                              placeholder="Jane Smith"
                               className="pl-10 rounded-[7px]"
-                              data-testid="input-register-full-name"
+                              autoComplete="name"
+                              data-testid="input-register-fullname"
                               {...field}
                             />
                           </div>
@@ -152,7 +98,31 @@ export default function Register() {
                       </FormItem>
                     )}
                   />
-                  
+
+                  <FormField
+                    control={form.control}
+                    name="businessName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Business name</FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                            <Input
+                              type="text"
+                              placeholder="Acme Inc."
+                              className="pl-10 rounded-[7px]"
+                              autoComplete="organization"
+                              data-testid="input-register-business"
+                              {...field}
+                            />
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
                   <FormField
                     control={form.control}
                     name="email"
@@ -164,7 +134,7 @@ export default function Register() {
                             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                             <Input
                               type="email"
-                              placeholder="you@business.com"
+                              placeholder="you@example.com"
                               className="pl-10 rounded-[7px]"
                               autoComplete="email"
                               data-testid="input-register-email"
@@ -176,7 +146,7 @@ export default function Register() {
                       </FormItem>
                     )}
                   />
-                  
+
                   <FormField
                     control={form.control}
                     name="password"
@@ -188,7 +158,7 @@ export default function Register() {
                             <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                             <Input
                               type={showPassword ? "text" : "password"}
-                              placeholder="Create a password"
+                              placeholder="Min. 8 characters"
                               className="pl-10 pr-10 rounded-[7px]"
                               autoComplete="new-password"
                               data-testid="input-register-password"
@@ -209,54 +179,13 @@ export default function Register() {
                           </div>
                         </FormControl>
                         <FormMessage />
-                        
-                        <div className="space-y-1 mt-2">
-                          {passwordRequirements.map((req) => (
-                            <div key={req.id} className="flex items-center gap-2">
-                              <Check 
-                                className={`h-3 w-3 ${
-                                  req.test(watchedPassword) ? "text-green-600" : "text-gray-300"
-                                }`} 
-                              />
-                              <span className={`text-xs ${
-                                req.test(watchedPassword) ? "text-gray-600" : "text-gray-400"
-                              }`}>
-                                {req.label}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
                       </FormItem>
                     )}
                   />
 
-                  <FormField
-                    control={form.control}
-                    name="confirmPassword"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Confirm password</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                            <Input
-                              type="password"
-                              placeholder="Confirm your password"
-                              className="pl-10 rounded-[7px]"
-                              autoComplete="new-password"
-                              data-testid="input-register-confirm-password"
-                              {...field}
-                            />
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
                   <Button
                     type="submit"
-                    className="w-full bg-[#1844A6] text-white rounded-[7px] mt-2"
+                    className="w-full bg-[#1844A6] text-white rounded-[7px]"
                     disabled={registerMutation.isPending}
                     data-testid="button-register-submit"
                   >
@@ -275,7 +204,7 @@ export default function Register() {
               <div className="mt-6 pt-6 border-t border-gray-200 text-center">
                 <p className="text-sm text-gray-600">
                   Already have an account?{" "}
-                  <Link 
+                  <Link
                     href="/login"
                     className="text-[#1844A6] font-medium underline"
                     data-testid="link-login"
@@ -298,13 +227,6 @@ export default function Register() {
             </Link>
             .
           </p>
-
-          <div className="mt-8 text-center">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#1844A6]/5 rounded-lg">
-              <span className="text-lg font-bold text-[#1844A6]">2.70% + $0.30</span>
-              <span className="text-sm text-gray-500">per transaction</span>
-            </div>
-          </div>
         </div>
       </main>
     </div>
