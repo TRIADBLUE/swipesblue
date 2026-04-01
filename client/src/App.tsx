@@ -42,6 +42,7 @@ import SystemStatus from "@/pages/SystemStatus";
 import Blog from "@/pages/Blog";
 import Careers from "@/pages/Careers";
 import Security from "@/pages/Security";
+import Pay from "@/pages/Pay";
 
 // Public product marketing pages
 import EcommerceSuite from "@/pages/products/EcommerceSuite";
@@ -391,6 +392,9 @@ function Router() {
           ADMIN ROUTES
           ════════════════════════════════════════════════════════════ */}
 
+      {/* Embedded Payment Page (iframe-compatible, standalone) */}
+      <Route path="/pay/:sessionId" component={Pay} />
+
       {/* Admin Login (public) */}
       <Route path="/admin/login" component={AdminLogin} />
 
@@ -460,14 +464,11 @@ function AppLayout() {
   const isAdminRoute = location.startsWith("/admin");
   const isDashboardRoute = location.startsWith("/dashboard");
   const isAuthPage = location === "/login" || location === "/register";
+  const isPayPage = location.startsWith("/pay/");
 
-  // Auth pages have their own layout
-  if (isAuthPage) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <Router />
-      </div>
-    );
+  // Pay pages and auth pages have their own layout — no header/footer
+  if (isPayPage || isAuthPage) {
+    return <Router />;
   }
 
   return (

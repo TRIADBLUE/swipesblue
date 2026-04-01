@@ -419,6 +419,41 @@ export type InsertPartnerPaymentTransaction = z.infer<
 export type PartnerPaymentTransaction =
   typeof partnerPaymentTransactions.$inferSelect;
 
+// Checkout Sessions table - for hosted/embedded checkout via partner platforms
+export const checkoutSessions = pgTable("checkout_sessions", {
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  platform: text("platform").notNull(), // Which partner platform created the session
+  apiKeyId: varchar("api_key_id").notNull(), // The API key used to create the session
+  gatewaySessionId: text("gateway_session_id"), // Internal gateway session ID
+  mode: text("mode").notNull().default("redirect"), // 'redirect' | 'embedded'
+  amount: integer("amount").notNull(), // Amount in cents
+  currency: text("currency").notNull().default("usd"),
+  description: text("description").notNull(),
+  customerEmail: text("customer_email").notNull(),
+  successUrl: text("success_url").notNull(),
+  cancelUrl: text("cancel_url").notNull(),
+  webhookUrl: text("webhook_url"), // Partner's webhook URL for payment confirmation
+  metadata: json("metadata"), // Partner-provided metadata
+  status: text("status").notNull().default("pending"), // 'pending' | 'completed' | 'expired' | 'canceled'
+  paymentMethod: text("payment_method"), // 'card' etc.
+  cardBrand: text("card_brand"),
+  cardLastFour: text("card_last_four"),
+  paidAt: timestamp("paid_at"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const insertCheckoutSessionSchema = createInsertSchema(checkoutSessions).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertCheckoutSession = z.infer<typeof insertCheckoutSessionSchema>;
+export type CheckoutSession = typeof checkoutSessions.$inferSelect;
+
 // Webhook Endpoints table - for storing webhook subscription configurations
 export const webhookEndpoints = pgTable("webhook_endpoints", {
   id: varchar("id")

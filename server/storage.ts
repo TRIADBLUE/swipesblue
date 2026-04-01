@@ -96,6 +96,8 @@ import {
   type InsertCustomerVault,
   type VaultPaymentMethod,
   type InsertVaultPaymentMethod,
+  type CheckoutSession,
+  type InsertCheckoutSession,
   type MerchantProfile,
   type InsertMerchantProfile,
   type MerchantTransaction,
@@ -156,6 +158,7 @@ import {
   merchantTransactions,
   conversations,
   messages,
+  checkoutSessions,
 } from "@shared/schema";
 import { eq, and, desc, like, or, lte, sql, count, inArray, gte } from "drizzle-orm";
 import { randomUUID } from "crypto";
@@ -241,6 +244,12 @@ export interface IStorage {
   getAllPartnerPaymentTransactions(): Promise<PartnerPaymentTransaction[]>;
   createPartnerPaymentTransaction(transaction: InsertPartnerPaymentTransaction): Promise<PartnerPaymentTransaction>;
   updatePartnerPaymentTransaction(id: string, transaction: Partial<InsertPartnerPaymentTransaction>): Promise<PartnerPaymentTransaction | undefined>;
+
+  // Checkout Session operations
+  getCheckoutSession(id: string): Promise<CheckoutSession | undefined>;
+  getCheckoutSessionByGatewayId(gatewaySessionId: string): Promise<CheckoutSession | undefined>;
+  createCheckoutSession(session: InsertCheckoutSession): Promise<CheckoutSession>;
+  updateCheckoutSession(id: string, session: Partial<InsertCheckoutSession>): Promise<CheckoutSession | undefined>;
 
   // Webhook Endpoint operations
   getWebhookEndpoint(id: string): Promise<WebhookEndpoint | undefined>;
@@ -938,6 +947,31 @@ export class DbStorage implements IStorage {
       .update(partnerPaymentTransactions)
       .set({ ...transaction, updatedAt: new Date() })
       .where(eq(partnerPaymentTransactions.id, id))
+      .returning();
+    return result[0];
+  }
+
+  // Checkout Session operations
+  async getCheckoutSession(id: string): Promise<CheckoutSession | undefined> {
+    const result = await db.select().from(checkoutSessions).where(eq(checkoutSessions.id, id));
+    return result[0];
+  }
+
+  async getCheckoutSessionByGatewayId(gatewaySessionId: string): Promise<CheckoutSession | undefined> {
+    const result = await db.select().from(checkoutSessions).where(eq(checkoutSessions.gatewaySessionId, gatewaySessionId));
+    return result[0];
+  }
+
+  async createCheckoutSession(session: InsertCheckoutSession): Promise<CheckoutSession> {
+    const result = await db.insert(checkoutSessions).values(session).returning();
+    return result[0];
+  }
+
+  async updateCheckoutSession(id: string, session: Partial<InsertCheckoutSession>): Promise<CheckoutSession | undefined> {
+    const result = await db
+      .update(checkoutSessions)
+      .set({ ...session, updatedAt: new Date() })
+      .where(eq(checkoutSessions.id, id))
       .returning();
     return result[0];
   }

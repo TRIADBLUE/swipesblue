@@ -19,6 +19,13 @@ export function log(message: string, source = "express") {
   console.log(`${formattedTime} [${source}] ${message}`);
 }
 
+function injectStripeKey(html: string): string {
+  const key = process.env.STRIPE_PUBLISHABLE_KEY || "";
+  if (!key) return html;
+  const script = `<script>window.__STRIPE_PUBLISHABLE_KEY__="${key}";</script>`;
+  return html.replace("</head>", `${script}</head>`);
+}
+
 export async function setupVite(app: Express, server: Server) {
   const serverOptions = {
     middlewareMode: true,
@@ -58,8 +65,15 @@ export async function setupVite(app: Express, server: Server) {
         `src="/src/main.tsx"`,
         `src="/src/main.tsx?v=${nanoid()}"`,
       );
-      const page = await vite.transformIndexHtml(url, template);
-      res.status(200).set({ "Content-Type": "text/html" }).end(page);
+      let page = await vite.transformIndexHtml(url, template);
+      page = injectStripeKey(page);
+
+      const headers: Record<string, string> = { "Content-Type": "text/html" };
+      // Allow iframes on /pay/ routes for embedded checkout
+      if (url.startsWith("/pay/")) {
+        headers["X-Frame-Options"] = "ALLOWALL";
+      }
+      res.status(200).set(headers).end(page);
     } catch (e) {
       vite.ssrFixStacktrace(e as Error);
       next(e);
@@ -79,7 +93,15 @@ export function serveStatic(app: Express) {
   app.use(express.static(distPath));
 
   // fall through to index.html if the file doesn't exist
-  app.use("*", (_req, res) => {
-    res.sendFile(path.resolve(distPath, "index.html"));
+  app.use("*", (req, res) => {
+    const indexPath = path.resolve(distPath, "index.html");
+    let html = fs.readFileSync(indexPath, "utf-8");
+    html = injectStripeKey(html);
+
+    // Allow iframes on /pay/ routes for embedded checkout
+    if (req.originalUrl.startsWith("/pay/")) {
+      res.removeHeader("X-Frame-Options");
+    }
+    res.status(200).set({ "Content-Type": "text/html" }).end(html);
   });
 }

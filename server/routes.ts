@@ -4848,6 +4848,122 @@ export async function registerRoutes(app: Express): Promise<Server> {
       .replace(/'/g, "&apos;");
   }
 
+  // ========================================
+  // Checkout Sessions API
+  // ========================================
+
+  // POST /api/v1/checkout/sessions — Create a hosted or embedded checkout session
+  app.post(
+    "/api/v1/checkout/sessions",
+    paymentLimiter,
+    requireApiKey,
+    requirePermission("process_payments"),
+    async (req, res) => {
+      const authReq = req as AuthenticatedRequest;
+
+      try {
+        const checkoutSchema = z.object({
+          mode: z.enum(["redirect", "embedded"]).optional().default("redirect"),
+          amount: z.number().int().positive("Amount must be a positive integer (cents)"),
+          currency: z.string().min(1),
+          description: z.string().min(1),
+          customerEmail: z.string().email("Valid email required"),
+          metadata: z.record(z.any()).optional(),
+          successUrl: z.string().url("Valid success URL required"),
+          cancelUrl: z.string().url("Valid cancel URL required"),
+          webhookUrl: z.string().url("Valid webhook URL required").optional(),
+        });
+
+        const validatedData = checkoutSchema.parse(req.body);
+
+        const { createCheckoutSession } = await import("./services/checkout");
+
+        const result = await createCheckoutSession(
+          validatedData,
+          authReq.apiKey!.platform,
+          authReq.apiKey!.id,
+        );
+
+        res.status(201).json(result);
+      } catch (error) {
+        console.error("Checkout session creation error:", error);
+        if (error instanceof z.ZodError) {
+          return res.status(400).json({
+            error: "Invalid request",
+            errors: error.errors,
+          });
+        }
+        // Never expose internal gateway details
+        res.status(502).json({ error: "Payment service unavailable" });
+      }
+    },
+  );
+
+  // GET /api/v1/checkout/sessions/:id — Get checkout session details (for embedded pay page)
+  app.get("/api/v1/checkout/sessions/:id", async (req, res) => {
+    try {
+      const { getCheckoutSessionForPayment } = await import("./services/checkout");
+      const result = await getCheckoutSessionForPayment(req.params.id);
+
+      if (!result) {
+        return res.status(404).json({ error: "Session not found or already completed" });
+      }
+
+      res.json({
+        id: result.session.id,
+        amount: result.session.amount,
+        currency: result.session.currency,
+        description: result.session.description,
+        customerEmail: result.session.customerEmail,
+        status: result.session.status,
+        clientSecret: result.clientSecret,
+        successUrl: result.session.successUrl,
+        cancelUrl: result.session.cancelUrl,
+      });
+    } catch (error) {
+      console.error("Error fetching checkout session:", error);
+      res.status(500).json({ error: "Failed to fetch session" });
+    }
+  });
+
+  // POST /api/v1/webhooks/stripe — Handle payment gateway webhooks
+  app.post(
+    "/api/v1/webhooks/stripe",
+    async (req, res) => {
+      try {
+        const sig = req.headers["stripe-signature"] as string;
+        if (!sig) {
+          return res.status(400).json({ error: "Missing signature header" });
+        }
+
+        const { constructWebhookEvent, handleCheckoutCompleted } = await import("./services/checkout");
+
+        // Verify signature using raw body buffer (captured by express.json verify callback)
+        const rawBody = (req as any).rawBody;
+        if (!rawBody) {
+          return res.status(400).json({ error: "Missing raw body for signature verification" });
+        }
+        const event = constructWebhookEvent(rawBody, sig);
+
+        switch (event.type) {
+          case "checkout.session.completed": {
+            const session = event.data.object as any;
+            await handleCheckoutCompleted(session.id);
+            break;
+          }
+          default:
+            // Acknowledge but ignore unhandled event types
+            break;
+        }
+
+        res.json({ received: true });
+      } catch (error: any) {
+        console.error("Webhook verification failed:", error.message);
+        res.status(400).json({ error: "Webhook verification failed" });
+      }
+    },
+  );
+
   const httpServer = createServer(app);
 
   return httpServer;

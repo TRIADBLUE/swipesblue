@@ -591,20 +591,184 @@ Authorization: Bearer sb_live_xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 | GET | `/api/v1/payments/merchant/:id` | API Key | Get merchant transactions |
 | GET | `/api/v1/payments/platform/:platform` | API Key | Get platform transactions |
 | GET | `/api/v1/payments/:transactionId` | API Key | Get transaction details |
-| POST | `/api/v1/api-keys/create` | None (TODO: Admin) | Create API key |
-| GET | `/api/v1/api-keys` | None (TODO: Admin) | List API keys |
-| DELETE | `/api/v1/api-keys/:id` | None (TODO: Admin) | Deactivate API key |
+| POST | `/api/v1/api-keys/create` | Admin | Create API key |
+| GET | `/api/v1/api-keys` | Admin | List API keys |
+| DELETE | `/api/v1/api-keys/:id` | Admin | Deactivate API key |
+| POST | `/api/v1/checkout/sessions` | API Key + Permission | Create checkout session |
+| GET | `/api/v1/checkout/sessions/:id` | Public | Get session for payment page |
+| POST | `/api/v1/webhooks/stripe` | Signature | Handle payment gateway webhooks |
 
 ### Permissions
 
 | Permission | Allows |
 |------------|--------|
 | `*` | All operations (wildcard) |
-| `process_payments` | Process payment transactions |
+| `process_payments` | Process payment transactions, create checkout sessions |
 | `process_refunds` | Issue refunds |
 
 ---
 
-**Phase 2 Complete!** 🎉
+## Phase 5: Checkout Sessions API
 
-SwipesBlue now has full partner payment processing capabilities with secure API authentication and merchant-specific payment routing.
+Hosted and embedded checkout for partner platforms (scansblue.com, businessblueprint.io, hostsblue.com).
+
+### How It Works
+
+1. Partner platform calls `POST /api/v1/checkout/sessions` with amount, description, customer email, and redirect URLs
+2. SwipesBlue creates a checkout session using its internal payment gateway
+3. Returns a checkout URL (hosted redirect) or a SwipesBlue payment page URL (embedded)
+4. Customer pays on the checkout page
+5. Payment gateway sends webhook to SwipesBlue
+6. SwipesBlue records the transaction and forwards confirmation to the partner's `webhookUrl`
+
+### POST `/api/v1/checkout/sessions`
+
+**Auth:** Requires API key with `process_payments` permission
+
+**Headers:**
+```
+Authorization: Bearer sb_live_your_api_key_here
+Content-Type: application/json
+```
+
+**Request (Redirect Mode — default):**
+```json
+{
+  "amount": 1000,
+  "currency": "usd",
+  "description": "Full Website Report — example.com",
+  "customerEmail": "customer@email.com",
+  "metadata": { "purchaseId": 123, "platform": "scansblue.com" },
+  "successUrl": "https://scansblue.com/success?session_id={SESSION_ID}",
+  "cancelUrl": "https://scansblue.com/purchase?canceled=true",
+  "webhookUrl": "https://scansblue.com/api/payment-webhook"
+}
+```
+
+**Response (201 Created):**
+```json
+{
+  "id": "uuid-session-id",
+  "url": "https://checkout.example.com/pay/..."
+}
+```
+
+**Request (Embedded Mode):**
+```json
+{
+  "mode": "embedded",
+  "amount": 1000,
+  "currency": "usd",
+  "description": "Full Website Report",
+  "customerEmail": "customer@email.com",
+  "metadata": {},
+  "successUrl": "https://scansblue.com/success?session_id={SESSION_ID}",
+  "cancelUrl": "https://scansblue.com/purchase?canceled=true",
+  "webhookUrl": "https://scansblue.com/api/payment-webhook"
+}
+```
+
+**Response (201 Created):**
+```json
+{
+  "id": "uuid-session-id",
+  "url": "https://swipesblue.com/pay/uuid-session-id",
+  "mode": "embedded"
+}
+```
+
+### Request Fields
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `mode` | string | No | `"redirect"` (default) or `"embedded"` |
+| `amount` | integer | Yes | Amount in cents (e.g., 1000 = $10.00) |
+| `currency` | string | Yes | Currency code (e.g., `"usd"`) |
+| `description` | string | Yes | Description shown to customer |
+| `customerEmail` | string | Yes | Customer's email address |
+| `metadata` | object | No | Arbitrary key-value data returned in webhooks |
+| `successUrl` | string | Yes | Redirect URL after successful payment. Use `{SESSION_ID}` placeholder. |
+| `cancelUrl` | string | Yes | Redirect URL if customer cancels |
+| `webhookUrl` | string | No | URL to receive payment confirmation webhook |
+
+### Webhook Confirmation
+
+After successful payment, SwipesBlue POSTs to the partner's `webhookUrl`:
+
+```json
+{
+  "event": "payment.completed",
+  "sessionId": "uuid-session-id",
+  "amount": 1000,
+  "currency": "usd",
+  "customerEmail": "customer@email.com",
+  "metadata": { "purchaseId": 123, "platform": "scansblue.com" },
+  "paidAt": "2026-03-31T12:00:00Z"
+}
+```
+
+No internal gateway details are ever exposed in webhook payloads.
+
+### Embedded Checkout (iframe)
+
+For embedded mode, the partner can load the payment page in an iframe:
+
+```html
+<iframe src="https://swipesblue.com/pay/uuid-session-id"
+        width="100%" height="600" frameborder="0"></iframe>
+```
+
+The embedded page:
+- Shows amount, description, and a card input form
+- Styled with SwipesBlue branding
+- On successful payment, sends `window.parent.postMessage({ event: 'payment.completed', sessionId: '...' }, '*')` for iframe detection
+- Redirects to the partner's `successUrl` after payment
+
+### Environment Variables
+
+Add these to SwipesBlue's environment (never shared with partner platforms):
+
+```bash
+STRIPE_SECRET_KEY=sk_live_...
+STRIPE_PUBLISHABLE_KEY=pk_live_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+```
+
+### Integration Example (scansblue.com)
+
+```javascript
+// Server-side: create checkout session
+const response = await fetch('https://swipesblue.com/api/v1/checkout/sessions', {
+  method: 'POST',
+  headers: {
+    'Authorization': `Bearer ${process.env.SWIPESBLUE_API_KEY}`,
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    amount: 4900,
+    currency: 'usd',
+    description: 'Full Website Report — example.com',
+    customerEmail: 'customer@email.com',
+    metadata: { purchaseId: 123, platform: 'scansblue.com' },
+    successUrl: 'https://scansblue.com/success?session_id={SESSION_ID}',
+    cancelUrl: 'https://scansblue.com/purchase?canceled=true',
+    webhookUrl: 'https://scansblue.com/api/payment-webhook',
+  }),
+});
+
+const { id, url } = await response.json();
+// Redirect customer to `url` to pay
+```
+
+### Error Handling
+
+| Status | Error | Meaning |
+|--------|-------|---------|
+| 400 | Invalid request | Missing or invalid fields |
+| 401 | Unauthorized | Missing or invalid API key |
+| 403 | Forbidden | API key lacks `process_payments` permission |
+| 502 | Payment service unavailable | Internal gateway error |
+
+---
+
+SwipesBlue now supports full checkout session management with both hosted redirect and embedded iframe payment flows.
