@@ -137,43 +137,49 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Column 4: TriadBlue Ecosystem */}
+          {/* Column 4: TRIADBLUE Ecosystem */}
           <div className="pl-8">
-            {/* Hero — this platform */}
-            <img src="/images/logos/swipesblue-logo-url.png" alt="swipesblue.com" style={{ height: 28, objectFit: 'contain' }} />
-            <p className="text-sm text-gray-500 mt-1 mb-6">Get paid. Stay paid. Go Blue.</p>
+            {/* TRIADBLUE.COM ECOSYSTEM — always first, always largest */}
+            <div className="mb-6">
+              <img src="/images/logos/triadblue-ecosystem-logo.png" alt="TRIADBLUE.COM ECOSYSTEM" style={{ height: 40, objectFit: 'contain' }} />
+              <p className="text-xs mt-2" style={{ color: '#6B7280' }}>Six Platforms. One Ecosystem. Go Blue.</p>
+            </div>
 
-            {/* Ecosystem header */}
-            <img src="/images/logos/triadblue-ecosystem-logo.png" alt="TRIADBLUE.COM ECOSYSTEM" style={{ height: 20, objectFit: 'contain' }} className="mb-4" />
+            <div style={{ borderTop: '0.5px solid rgba(9,8,14,0.5)', marginBottom: 20 }} />
 
-            {/* Other platforms */}
-            <div className="space-y-3">
+            {/* All platforms in fixed order — swipesblue is featured (this site) */}
+            <div className="space-y-4">
               <div>
                 <a href="https://businessblueprint.io" target="_blank" rel="noopener noreferrer">
-                  <img src="/images/logos/bb-header-logo.png" alt="businessblueprint.io" style={{ height: 20, objectFit: 'contain' }} />
+                  <img src="/images/logos/bb-header-logo.png" alt="businessblueprint.io" style={{ height: 22, objectFit: 'contain' }} />
                 </a>
-                <p className="text-xs text-gray-400 mt-1">We assess. We prescribe. You grow.</p>
+                <p className="text-xs mt-1" style={{ color: '#6B7280' }}>Get Assessed. Get Prescribed. Get Business.</p>
+              </div>
+
+              <div>
+                <img src="/images/logos/swipesblue_logo_image_and_text_as_url.png" alt="swipesblue.com" style={{ height: 32, objectFit: 'contain' }} />
+                <p className="text-sm mt-2" style={{ color: '#6B7280' }}>Go Blue. Get Swiped. Get Paid.</p>
               </div>
 
               <div>
                 <a href="https://hostsblue.com" target="_blank" rel="noopener noreferrer">
-                  <img src="/images/logos/hostsblue_logo_image_and_text_as_url.png" alt="hostsblue.com" style={{ height: 20, objectFit: 'contain' }} />
+                  <img src="/images/logos/hostsblue_logo_image_and_text_as_url.png" alt="hostsblue.com" style={{ height: 22, objectFit: 'contain' }} />
                 </a>
-                <p className="text-xs text-gray-400 mt-1">Get site. Go live. Go Blue.</p>
+                <p className="text-xs mt-1" style={{ color: '#6B7280' }}>Go Blue. Get Site. Go Live.</p>
               </div>
 
               <div>
                 <a href="https://scansblue.com" target="_blank" rel="noopener noreferrer">
-                  <img src="/images/logos/scansblue_logo_image_and_text_as_url.png" alt="scansblue.com" style={{ height: 20, objectFit: 'contain' }} />
+                  <img src="/images/logos/scansblue_logo_image_and_text_as_url.png" alt="scansblue.com" style={{ height: 22, objectFit: 'contain' }} />
                 </a>
-                <p className="text-xs text-gray-400 mt-1">Get scanned. Get scored. Go Blue.</p>
+                <p className="text-xs mt-1" style={{ color: '#6B7280' }}>Go Blue. Get Scanned. Get Scored.</p>
               </div>
 
               <div>
                 <a href="https://builderblue2.com" target="_blank" rel="noopener noreferrer">
-                  <img src="/images/logos/builderblue2-logo-url.png" alt="BUILDERBLUE2.COM" style={{ height: 20, objectFit: 'contain' }} />
+                  <img src="/images/logos/builderblue2-logo-url.png" alt="BUILDERBLUE².COM" style={{ height: 22, objectFit: 'contain' }} />
                 </a>
-                <p className="text-xs text-gray-400 mt-1">Get vibe. Get code. Go Blue².</p>
+                <p className="text-xs mt-1" style={{ color: '#6B7280' }}>Go Blue. Get Vibed. Get Ahead.</p>
               </div>
             </div>
           </div>
