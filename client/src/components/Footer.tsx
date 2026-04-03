@@ -44,86 +44,6 @@ const footerSections = {
   },
 };
 
-const ecosystemPlatforms = [
-  {
-    name: "swipesblue",
-    href: "/",
-    isInternal: true,
-    descriptor: "payments",
-    renderBrand: () => (
-      <div className="flex items-center gap-2">
-        <img src="/images/logos/swipesblue-icon.png" alt="" className="h-5 w-5" />
-        <span className="text-sm font-semibold">
-          <span style={{ color: '#374151' }}>swipes</span>
-          <span style={{ color: '#0000FF' }}>blue</span>
-          <span style={{ color: '#374151' }}>.com</span>
-        </span>
-      </div>
-    ),
-  },
-  {
-    name: "hostsblue",
-    href: "https://hostsblue.com",
-    isInternal: false,
-    descriptor: "hosting",
-    renderBrand: () => (
-      <div className="flex items-center gap-2">
-        <img src="/images/logos/hostsblue-icon.png" alt="" className="h-5 w-5" />
-        <span className="text-sm font-semibold">
-          <span style={{ color: '#008060' }}>hosts</span>
-          <span style={{ color: '#0000FF' }}>blue</span>
-          <span style={{ color: '#008060' }}>.com</span>
-        </span>
-      </div>
-    ),
-  },
-  {
-    name: "businessblueprint",
-    href: "https://businessblueprint.io",
-    isInternal: false,
-    descriptor: "websites",
-    renderBrand: () => (
-      <div className="flex items-center gap-2">
-        <img src="/images/logos/businessblueprint-icon.png" alt="" className="h-5 w-5" />
-        <span className="text-sm font-semibold">
-          <span style={{ color: '#FF6B00' }}>business</span>
-          <span style={{ color: '#0000FF' }}>blueprint</span>
-          <span style={{ color: '#FF6B00' }}>.io</span>
-        </span>
-      </div>
-    ),
-  },
-  {
-    name: "scansblue",
-    href: "https://scansblue.com",
-    isInternal: false,
-    descriptor: "assessments",
-    renderBrand: () => (
-      <div className="flex items-center gap-2">
-        <img src="/images/logos/scansblue-icon.png" alt="" className="h-5 w-5" />
-        <span className="text-sm font-semibold">
-          <span style={{ color: '#A00028' }}>scans</span>
-          <span style={{ color: '#0000FF' }}>blue</span>
-          <span style={{ color: '#A00028' }}>.com</span>
-        </span>
-      </div>
-    ),
-  },
-  {
-    name: "triadblue",
-    href: "https://triadblue.com",
-    isInternal: false,
-    descriptor: "parent company",
-    renderBrand: () => (
-      <div className="flex items-center">
-        <span className="text-sm font-semibold" style={{ color: '#1844A6' }}>triad</span>
-        <img src="/images/logos/triadblue-icon.png" alt="" className="h-[14px] w-[14px] mx-[1px]" />
-        <span className="text-sm font-semibold" style={{ color: '#1844A6' }}>blue.com</span>
-      </div>
-    ),
-  },
-];
-
 export default function Footer() {
   return (
     <footer className="bg-white border-t border-gray-200" data-testid="footer">
@@ -219,31 +139,42 @@ export default function Footer() {
 
           {/* Column 4: TriadBlue Ecosystem */}
           <div className="pl-8">
-            <h4 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4">
-              triadblue ecosystem
-            </h4>
-            <div className="flex flex-col gap-4">
-              {ecosystemPlatforms.map((platform) => (
-                <div key={platform.name}>
-                  {platform.isInternal ? (
-                    <Link href={platform.href} data-testid={`link-footer-platform-${platform.name}`}>
-                      {platform.renderBrand()}
-                    </Link>
-                  ) : (
-                    <a
-                      href={platform.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      data-testid={`link-footer-platform-${platform.name}`}
-                    >
-                      {platform.renderBrand()}
-                    </a>
-                  )}
-                  <span className="text-xs text-gray-400 ml-7">
-                    {platform.descriptor}
-                  </span>
-                </div>
-              ))}
+            {/* Hero — this platform */}
+            <img src="/images/logos/swipesblue-logo-url.png" alt="swipesblue.com" style={{ height: 28, objectFit: 'contain' }} />
+            <p className="text-sm text-gray-500 mt-1 mb-6">Get paid. Stay paid. Go Blue.</p>
+
+            {/* Ecosystem header */}
+            <img src="/images/logos/triadblue-ecosystem-logo.png" alt="TRIADBLUE.COM ECOSYSTEM" style={{ height: 20, objectFit: 'contain' }} className="mb-4" />
+
+            {/* Other platforms */}
+            <div className="space-y-3">
+              <div>
+                <a href="https://businessblueprint.io" target="_blank" rel="noopener noreferrer">
+                  <img src="/images/logos/bb-header-logo.png" alt="businessblueprint.io" style={{ height: 20, objectFit: 'contain' }} />
+                </a>
+                <p className="text-xs text-gray-400 mt-1">We assess. We prescribe. You grow.</p>
+              </div>
+
+              <div>
+                <a href="https://hostsblue.com" target="_blank" rel="noopener noreferrer">
+                  <img src="/images/logos/hostsblue_logo_image_and_text_as_url.png" alt="hostsblue.com" style={{ height: 20, objectFit: 'contain' }} />
+                </a>
+                <p className="text-xs text-gray-400 mt-1">Get site. Go live. Go Blue.</p>
+              </div>
+
+              <div>
+                <a href="https://scansblue.com" target="_blank" rel="noopener noreferrer">
+                  <img src="/images/logos/scansblue_logo_image_and_text_as_url.png" alt="scansblue.com" style={{ height: 20, objectFit: 'contain' }} />
+                </a>
+                <p className="text-xs text-gray-400 mt-1">Get scanned. Get scored. Go Blue.</p>
+              </div>
+
+              <div>
+                <a href="https://builderblue2.com" target="_blank" rel="noopener noreferrer">
+                  <img src="/images/logos/builderblue2-logo-url.png" alt="BUILDERBLUE2.COM" style={{ height: 20, objectFit: 'contain' }} />
+                </a>
+                <p className="text-xs text-gray-400 mt-1">Get vibe. Get code. Go Blue².</p>
+              </div>
             </div>
           </div>
         </div>
@@ -253,7 +184,7 @@ export default function Footer() {
       <div className="border-t border-gray-200">
         <div className="max-w-7xl mx-auto py-6 px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <span className="text-xs text-gray-400">
-            © {new Date().getFullYear()} swipesblue, inc. all rights reserved.
+            © {new Date().getFullYear()} TRIADBLUE, Inc. All rights reserved. swipesblue.com is a product of TRIADBLUE, Inc.
           </span>
           <div className="flex items-center gap-1 text-xs text-gray-400">
             <Link href="/terms" className="hover:text-gray-500 transition-colors" data-testid="link-footer-terms">
