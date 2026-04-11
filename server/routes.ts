@@ -4936,7 +4936,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return res.status(400).json({ error: "Missing signature header" });
         }
 
-        const { constructWebhookEvent, handleCheckoutCompleted } = await import("./services/checkout");
+        const { constructWebhookEvent, handleCheckoutCompleted, handleCheckoutFailed } = await import("./services/checkout");
 
         // Verify signature using raw body buffer (captured by express.json verify callback)
         const rawBody = (req as any).rawBody;
@@ -4949,6 +4949,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           case "checkout.session.completed": {
             const session = event.data.object as any;
             await handleCheckoutCompleted(session.id);
+            break;
+          }
+          case "checkout.session.expired": {
+            const session = event.data.object as any;
+            await handleCheckoutFailed(session.id);
             break;
           }
           default:

@@ -7,6 +7,7 @@
  */
 
 import Stripe from "stripe";
+import crypto from "crypto";
 import { storage } from "../storage";
 import type { CheckoutSession } from "@shared/schema";
 
@@ -159,13 +160,97 @@ export async function handleCheckoutCompleted(
     };
 
     try {
+      const payloadString = JSON.stringify(payload);
+
+      // Look up the API key's secret for HMAC signing
+      const apiKey = await storage.getApiKey(session.apiKeyId);
+      const signingSecret = apiKey?.apiSecret;
+
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+        "User-Agent": "SwipesBlue-Webhook/1.0",
+        "X-Webhook-Event": "payment.completed",
+        "X-Webhook-Timestamp": new Date().toISOString(),
+      };
+
+      if (signingSecret) {
+        const signature = crypto
+          .createHmac("sha256", signingSecret)
+          .update(payloadString)
+          .digest("hex");
+        headers["X-Swipesblue-Signature"] = signature;
+      }
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+      const response = await fetch(session.webhookUrl, {
+        method: "POST",
+        headers,
+        body: payloadString,
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        console.error(
+          `[Checkout] Webhook forward to ${session.webhookUrl} returned ${response.status}`,
+        );
+      }
+    } catch (err) {
+      console.error(`[Checkout] Failed to forward webhook to ${session.webhookUrl}:`, err);
+    }
+  }
+}
+
+/**
+ * Handle a failed or expired checkout event from the payment gateway webhook.
+ */
+export async function handleCheckoutFailed(
+  gatewaySessionId: string,
+): Promise<void> {
+  const session = await storage.getCheckoutSessionByGatewayId(gatewaySessionId);
+  if (!session) return;
+
+  await storage.updateCheckoutSession(session.id, { status: "failed" });
+
+  if (session.webhookUrl) {
+    const payload = {
+      event: "payment.failed",
+      sessionId: session.id,
+      amount: session.amount,
+      currency: session.currency,
+      customerEmail: session.customerEmail,
+      metadata: session.metadata,
+      failedAt: new Date().toISOString(),
+    };
+
+    try {
+      const payloadString = JSON.stringify(payload);
+      const apiKey = await storage.getApiKey(session.apiKeyId);
+      const signingSecret = apiKey?.apiSecret;
+
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+        "User-Agent": "SwipesBlue-Webhook/1.0",
+        "X-Webhook-Event": "payment.failed",
+        "X-Webhook-Timestamp": new Date().toISOString(),
+      };
+
+      if (signingSecret) {
+        headers["X-Swipesblue-Signature"] = crypto
+          .createHmac("sha256", signingSecret)
+          .update(payloadString)
+          .digest("hex");
+      }
+
       await fetch(session.webhookUrl, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        headers,
+        body: payloadString,
       });
     } catch (err) {
-      console.error(`Failed to forward webhook to ${session.webhookUrl}:`, err);
+      console.error(`[Checkout] Failed to forward failure webhook:`, err);
     }
   }
 }

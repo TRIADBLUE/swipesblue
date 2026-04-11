@@ -78,5 +78,6 @@ These are internal to SwipesBlue only.
 |------|---------|
 | 2026-01-31 | Webhook signature verification added. |
 | 2026-04-02 | Ecosystem footer prompt written. Checkout sessions endpoint identified as blocker for scansblue. |
+| 2026-04-11 | Checkout webhook forwarding now HMAC-SHA256 signed via `X-Swipesblue-Signature` header (uses `api_keys.apiSecret`). Added `handleCheckoutFailed` and wired `checkout.session.expired` in the Stripe webhook router. |
 
 **AGENTS: Update this section on every commit. Your work is not done until this changelog reflects it.**
