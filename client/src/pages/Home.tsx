@@ -9,24 +9,19 @@ import {
   Users,
   BarChart3,
   TrendingUp,
+  Phone,
+  FileText,
+  Shield,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 
 // ── STATS ────────────────────────────────────────────────────
 const stats = [
-  { value: "5.8B+", label: "Transactions powered annually" },
-  { value: "2.70%", label: "Processing rate — beats Stripe, PayPal, Square" },
+  { value: "PCI L1", label: "Certified payment security" },
+  { value: "Human", label: "Underwriting by real people" },
   { value: "99.99%", label: "Uptime SLA" },
   { value: "$0", label: "To get started" },
-];
-
-// ── COMPARISON TABLE ─────────────────────────────────────────
-const competitors = [
-  { name: "swipesblue", rate: "2.70% + $0.30", fee: "$3.00", keep: "$97.00", best: true },
-  { name: "Stripe", rate: "2.90% + $0.30", fee: "$3.20", keep: "$96.80" },
-  { name: "PayPal", rate: "2.99% + $0.49", fee: "$3.48", keep: "$96.52" },
-  { name: "Square", rate: "2.90% + $0.30", fee: "$3.20", keep: "$96.80" },
 ];
 
 // ── E-COMMERCE SUITE PRODUCTS ────────────────────────────────
@@ -66,17 +61,17 @@ export default function Home() {
       {/* ═══ HERO ═══ */}
       <section className="pt-20 pb-16 md:pt-24 md:pb-14 max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <h1 className="text-[44px] md:text-[52px] font-extrabold leading-[1.1] tracking-tight">
-          One platform.
+          Built with e<span style={{ color: '#8000FF' }}>X</span>perience.
           <br />
-          <span className="text-[#1844A6]">Every way to get paid.</span>
+          Because we are.
         </h1>
         <p className="text-xl text-gray-500 mt-4 max-w-[600px] mx-auto leading-relaxed">
-          Whether you're launching a store, integrating payments, or replacing your current processor — swipesblue has what you need at 2.70% + $0.30.
+          A payment gateway by the generation that still answers the phone, reads the fine print, and keeps our word.
         </p>
 
         {/* Trust badges inline */}
         <div className="flex justify-center gap-6 md:gap-8 mt-7 flex-wrap">
-          {["PCI Level 1", "99.99% Uptime", "256-bit TLS", "Built on NMI"].map((badge) => (
+          {["PCI Level 1", "99.99% Uptime", "256-bit TLS", "Human Underwriting"].map((badge) => (
             <span
               key={badge}
               className="text-xs text-gray-400 font-semibold uppercase tracking-wide"
@@ -208,7 +203,7 @@ export default function Home() {
               </div>
               <div className="mt-auto">
                 <div className="text-xs text-gray-400 font-medium mb-2.5">
-                  2.70% + $0.30 PER TRANSACTION
+                  TRANSPARENT, TRANSACTION-BASED PRICING
                 </div>
                 <Link href="/register?path=developer">
                   <button className="w-full bg-[#0d9488] text-white border-none rounded-[7px] py-3 text-sm font-semibold cursor-pointer transition-colors hover:bg-[#0d9488]/90">
@@ -252,16 +247,16 @@ export default function Home() {
                 process payments
               </h3>
               <p className="text-white/75 text-[13px] mt-2 leading-relaxed">
-                Switch processors and keep more revenue
+                A gateway that still answers the phone.
               </p>
             </div>
 
             <div className="flex-1 flex flex-col" style={{ padding: "24px 28px 28px" }}>
               <p className="text-sm text-gray-600 leading-[1.7] mb-5">
-                Already running a business? Key in cards over the phone, send payment links to clients, invoice for completed work. No store needed — just a faster, cheaper way to get paid.
+                Already running a business? Key in cards over the phone, send payment links to clients, invoice for completed work. No store needed — just a processor that picks up when you call and underwrites by people, not algorithms.
               </p>
               <div className="flex flex-col gap-2.5 mb-6">
-                {["Virtual terminal — key in cards anywhere", "Payment links via text or email", "Professional invoicing", "Lower fees than Square or PayPal", "Switch in under 10 minutes"].map((item) => (
+                {["Virtual terminal — key in cards anywhere", "Payment links via text or email", "Professional invoicing", "Real people on support and underwriting", "Switch in under 10 minutes"].map((item) => (
                   <div key={item} className="flex items-start gap-2">
                     <span className="text-green-600 text-sm mt-0.5 flex-shrink-0">✓</span>
                     <span className="text-[13px] text-gray-700">{item}</span>
@@ -270,7 +265,7 @@ export default function Home() {
               </div>
               <div className="mt-auto">
                 <div className="text-xs text-gray-400 font-medium mb-2.5">
-                  SAVE UP TO $0.48 PER TRANSACTION
+                  TRANSPARENT, TRANSACTION-BASED PRICING
                 </div>
                 <Link href="/register?path=gateway">
                   <button className="w-full bg-[#374151] text-white border-none rounded-[7px] py-3 text-sm font-semibold cursor-pointer transition-colors hover:bg-[#374151]/90">
@@ -525,51 +520,40 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ═══ COMPARISON TABLE ═══ */}
+      {/* ═══ DIFFERENTIATOR GRID ═══ */}
       <section className="bg-[#f9fafb] border-t border-gray-200 py-20 md:py-24">
-        <div className="max-w-[800px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-10">
             <h2 className="text-4xl font-extrabold tracking-tight mb-3">
-              Keep more of what you earn
+              What makes swipesblue different
             </h2>
             <p className="text-base text-gray-500">
-              Compare processing fees on a $100 sale
+              Built for operators who've been here before.
             </p>
           </div>
 
-          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-            <table className="w-full border-collapse">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left py-3.5 px-5 text-[13px] font-semibold text-gray-700">Provider</th>
-                  <th className="text-left py-3.5 px-5 text-[13px] font-semibold text-gray-700">Rate</th>
-                  <th className="text-right py-3.5 px-5 text-[13px] font-semibold text-gray-700">Fee on $100</th>
-                  <th className="text-right py-3.5 px-5 text-[13px] font-semibold text-gray-700">You Keep</th>
-                </tr>
-              </thead>
-              <tbody>
-                {competitors.map((row) => (
-                  <tr
-                    key={row.name}
-                    className="border-b border-gray-100 last:border-0"
-                    style={{ background: row.best ? "#1844A608" : "transparent" }}
-                  >
-                    <td className="py-3 px-5 text-sm" style={{ fontWeight: row.best ? 700 : 400, color: row.best ? "#1844A6" : "#4b5563" }}>
-                      {row.name}
-                    </td>
-                    <td className="py-3 px-5 text-sm" style={{ color: row.best ? "#1844A6" : "#6b7280" }}>
-                      {row.rate}
-                    </td>
-                    <td className="py-3 px-5 text-sm text-right" style={{ fontWeight: row.best ? 600 : 400, color: row.best ? "#1844A6" : "#6b7280" }}>
-                      {row.fee}
-                    </td>
-                    <td className="py-3 px-5 text-sm text-right" style={{ fontWeight: row.best ? 700 : 400, color: row.best ? "#16a34a" : "#6b7280" }}>
-                      {row.keep}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-white border-2 border-gray-200 rounded-xl" style={{ padding: 28 }}>
+              <Phone className="h-8 w-8 text-gray-900 mb-4" />
+              <h3 className="text-lg font-bold text-gray-900 mb-2">We answer the phone</h3>
+              <p className="text-sm text-gray-600 leading-[1.7]">
+                Real people on support. When something goes wrong with a payment, you reach a human who knows your account — not a ticket queue.
+              </p>
+            </div>
+            <div className="bg-white border-2 border-gray-200 rounded-xl" style={{ padding: 28 }}>
+              <FileText className="h-8 w-8 text-gray-900 mb-4" />
+              <h3 className="text-lg font-bold text-gray-900 mb-2">We read the fine print</h3>
+              <p className="text-sm text-gray-600 leading-[1.7]">
+                No reserve traps. No surprise holds. No terms that change when volume grows. What we sign is what we deliver.
+              </p>
+            </div>
+            <div className="bg-white border-2 border-gray-200 rounded-xl" style={{ padding: 28 }}>
+              <Shield className="h-8 w-8 text-gray-900 mb-4" />
+              <h3 className="text-lg font-bold text-gray-900 mb-2">We keep our word</h3>
+              <p className="text-sm text-gray-600 leading-[1.7]">
+                Underwriting by people, not algorithms. Payouts on time. An account that still works next year — and the year after that.
+              </p>
+            </div>
           </div>
         </div>
       </section>
@@ -598,15 +582,6 @@ export default function Home() {
           </Link>
         </div>
       </section>
-
-      {/* ═══ NMI FOOTNOTE ═══ */}
-      <div className="bg-white border-t border-gray-100 py-4 px-8">
-        <p className="text-xs text-gray-400 text-center max-w-4xl mx-auto">
-          * Platform statistics reflect NMI's global payment gateway network, on which swipesblue is built.
-          Transaction volume, uptime, and processing figures are sourced from NMI's published platform data.
-          swipesblue is an independent platform powered by NMI's payment infrastructure.
-        </p>
-      </div>
     </div>
   );
 }

@@ -1,5 +1,5 @@
 # CLAUDE.md — swipesblue.com
-# Last updated: April 11, 2026
+# Last updated: April 20, 2026
 
 ---
 
@@ -126,6 +126,7 @@ These are internal to SwipesBlue only. They never appear in any other repo, neve
 - Rate limiting on auth, payments, and API-management endpoints ✓
 - Footer ecosystem column with logo images + taglines ✓ (commits `1c94aa3`, `24d6c83`, `8c3a48b`)
 - Landing page, pricing, register, login, legal pages ✓
+- Homepage eXperience repositioning ✓ (2026-04-20)
 - `scansblue` added as a recognized platform across admin UI + server-side validation ✓ (commits `d7627fe`, `d9f0dac`)
 
 ## PENDING
@@ -159,39 +160,41 @@ These are internal to SwipesBlue only. They never appear in any other repo, neve
 | 2026-04-02 | Ecosystem footer prompt written. Footer ecosystem column identified as needing logo images + official taglines. Checkout sessions endpoint (previously listed as blocker for scansblue) confirmed already built. |
 | 2026-04-02 | Footer ecosystem column rebuilt with logo images and official taglines (commit `1c94aa3`). Fixed order, TRIADBLUE first, swipesblue featured (commit `24d6c83`). Added swipesblue URL logo (commit `8c3a48b`). |
 | 2026-04-11 | **Checkout webhook forwarding now HMAC-SHA256 signed (commit `e9068d5`).** Replaced the unsigned `fetch()` in `server/services/checkout.ts` `handleCheckoutCompleted` with a signed version that looks up `api_keys.apiSecret` via `storage.getApiKey(session.apiKeyId)`, computes `createHmac("sha256", secret).update(body).digest("hex")`, and sends it as `X-Swipesblue-Signature`. Added `X-Webhook-Event`, `X-Webhook-Timestamp`, `User-Agent: SwipesBlue-Webhook/1.0`, a 10s AbortController timeout, and non-2xx response logging. Added `crypto` import at the top of `checkout.ts`. Added new exported `handleCheckoutFailed(gatewaySessionId)` that marks the session `"failed"` and forwards a signed `payment.failed` event using the same pattern. Wired `case "checkout.session.expired"` into the switch in `server/routes.ts` `/api/v1/webhooks/stripe` handler, importing `handleCheckoutFailed` alongside `handleCheckoutCompleted`. Rationale: businessblueprint.io (and any future partner consuming `webhookUrl`) expects HMAC verification via `X-Swipesblue-Signature`; without it, partners correctly reject every forwarded event as unverified. |
+| 2026-04-20 | Homepage repositioned to eXperience tagline. Removed all Stripe-comparison price claims ("2.70% beats Stripe", "SAVE UP TO $0.48", "Lower fees than Square"), removed all NMI references ("Built on NMI" trust badge, NMI stats footnote, "5.8B+ transactions powered annually" stat sourced from NMI), replaced the competitor price table with a three-column differentiator grid ("We answer the phone / We read the fine print / We keep our word"), updated Path 3 gateway card from price-led to people-led, and set the hero to "Built with eXperience. Because we are." with the X rendered in #8000FF for TRIADBLUE ecosystem continuity with /convert. Only file changed: client/src/pages/Home.tsx. |
 
 **AGENTS: Update this section on every commit. Your work is not done until this changelog reflects it.**
 
 ---
 
-## HANDOFF NOTES FOR THE NEXT AGENT (2026-04-11)
+## HANDOFF NOTES FOR THE NEXT AGENT (2026-04-20)
 
-**Current branch state:** `main` is **1 commit ahead of origin at session start**, now pushed. Single commit this session:
-1. `e9068d5` — `fix: sign checkout webhook forwarding with HMAC-SHA256 via X-Swipesblue-Signature header`
+**Current branch state:** `main` is up to date with origin. Two commits this session (oldest → newest):
+1. `e9068d5` (2026-04-11) — `fix: sign checkout webhook forwarding with HMAC-SHA256 via X-Swipesblue-Signature header`
+2. `a66ec93` (2026-04-12) — `docs: rebuild CLAUDE.md with full architecture, API surface, handoff notes, and changelog`
+3. (pending commit) — homepage eXperience repositioning
 
-`.replit` and `public/` are in the working tree as pre-existing uncommitted changes that were there before this session started — **do not touch them** unless you know what they are. Dean has not authorized a commit on either. Ask before staging.
+`.replit` and `public/` are in the working tree as pre-existing uncommitted changes — **do not touch them** unless you know what they are. Dean has not authorized a commit on either. Ask before staging.
 
-**What landed today in plain English:**
-- Before: `handleCheckoutCompleted` forwarded `payment.completed` events to the partner's `webhookUrl` with a plain unsigned `fetch()`. businessblueprint.io (which uses HMAC verification) rejected every event as unauthenticated, so BP silently stopped acting on SwipesBlue payments.
-- After: The forwarding now computes an HMAC-SHA256 over the raw JSON body using the partner's `apiSecret` (from the `api_keys` row matched by `session.apiKeyId`), and sends it as `X-Swipesblue-Signature`. Plus matching `X-Webhook-Event` / `X-Webhook-Timestamp` / `User-Agent` headers, a 10s timeout, and error logging. Same pattern added for failed/expired sessions via the new `handleCheckoutFailed` function and a new `case "checkout.session.expired"` in the Stripe webhook switch.
-- This is a drop-in compatibility fix with the existing `server/services/webhook.ts` signing algorithm — same `sha256` + hex digest. The two code paths (partner-registered webhooks and checkout forwarding) now sign identically.
+**What landed today (2026-04-20) in plain English:**
+- The homepage (`client/src/pages/Home.tsx`) was repositioned from a price-led pitch ("2.70% beats Stripe") to a trust-led pitch ("Built with eXperience. Because we are."). This was necessary because SwipesBlue is temporarily running on Stripe rails, making price comparisons against Stripe indefensible, and all NMI references were stale since NMI infrastructure is not currently in use.
+- **Removed:** hero headline/subhead with pricing, "Built on NMI" trust badge, entire competitor fee comparison table (`competitors` const + `<table>` block), NMI stats footnote at page bottom, all "2.70%", "5.8B+", "SAVE UP TO $0.48", "Lower fees than Square" copy, and the "keep more revenue" Path 3 subtitle.
+- **Added:** new hero "Built with eXperience. Because we are." with the X in `#8000FF` (visual continuity with /convert across TRIADBLUE ecosystem). New subhead targeting Gen X/SMB trust. "Human Underwriting" trust badge. Three-column differentiator grid ("We answer the phone / We read the fine print / We keep our word"). Path 3 gateway card rewritten from price-led to people-led. Path 2 and Path 3 rate labels both changed to "TRANSPARENT, TRANSACTION-BASED PRICING". Stats bar updated from NMI-sourced numbers to PCI/Human/Uptime/$0.
+- **Casing rule:** The word is **eXperience** (lowercase e, capital X, lowercase perience). In JSX it renders as `e<span style={{ color: '#8000FF' }}>X</span>perience` — three text nodes, not a single string. The capital X carries the pun; the `#8000FF` color is the amplifier, not the carrier.
 
-**Before trusting this in production:**
-1. **Verify the secret roundtrip for businessblueprint.io.** Open SwipesBlue admin → API Keys → find the row for BP's key → view `apiSecret`. Then on Railway, check BP's `SWIPESBLUE_WEBHOOK_SECRET` env var. They must match byte-for-byte. If BP ever rotated the secret on its side without telling SwipesBlue, today's fix will still silently fail.
-2. **Run an end-to-end test.** Create a $1 checkout session via the BP → SwipesBlue flow, complete it with a Stripe test card, confirm BP receives the `payment.completed` event AND marks the user as paid. Do the same with `checkout.session.expired` by creating a session and letting it time out (or firing it manually via the Stripe CLI).
-3. **Do not stage `.replit` or `public/`.** They're pre-existing uncommitted changes from before this session. Scope everything you commit to the files you actually edited.
+**Still pending from prior sessions:**
+1. **`SWIPESBLUE_WEBHOOK_SECRET` roundtrip check for businessblueprint.io** — same as before (see PENDING > CRITICAL section). Still unverified.
+2. **Footer copyright bar** — still reads "swipesblue, inc." — should be "TRIADBLUE, Inc."
+3. **16 pre-existing TypeScript errors** — unchanged, not blocking Replit builds.
 
 **Things that look odd but are intentional:**
-- `server/services/checkout.ts` and `server/services/webhook.ts` both contain inline HMAC signing — they are NOT shared through a helper. The prompt for today's work explicitly said "checkout uses its own signing inline" — do not refactor this into a shared util without instruction. Dean wants them independent so the two paths can be reasoned about separately.
-- 16 TypeScript errors are present on `main` and have been for at least a week. They do not block dev (`tsx`) or the Replit build. Do NOT "fix them while you're in there" without scope — most are admin dashboard query-typing issues that need their own focused session. `db.ts:17` (`PgPool` value-as-type) and the two `p-retry` `AbortError` errors in `replit_integrations/batch/utils.ts` are the lowest-hanging if Dean asks for a cleanup pass.
-- This repo is the **only** place `Stripe` may be referenced. If you see `Stripe` outside this repo, it's a universal-rules violation — flag it, don't normalize it.
-- Replit still has the `javascript_openrouter_ai_integrations:2.0.0` integration installed (`.replit:43`). It injects `AI_INTEGRATIONS_OPENROUTER_*` env vars used by `server/replit_integrations/chat/routes.ts`. If you don't see the chat feature being used anywhere meaningful, it's probably cruft from an earlier exploration — confirm with Dean before ripping out.
+- `server/services/checkout.ts` and `server/services/webhook.ts` both contain inline HMAC signing — NOT shared through a helper. Dean wants them independent.
+- 16 TypeScript errors are present on `main` and have been for weeks. Do not fix without explicit scope.
+- `Check` and `ArrowRight` are imported from `lucide-react` in Home.tsx but not used in the JSX. They were already unused before this session's changes — left alone per "do not touch anything outside scope."
+- The `#8000FF` color appears ONLY on the hero X in Home.tsx. It must NOT spread to other elements on this page or elsewhere. It's the /convert accent color borrowed for ecosystem continuity.
+- Local `npm run build` fails due to a broken `node_modules/.bin/vite` CJS shim — this is a pre-existing local toolchain issue, not caused by any code change. The project builds correctly on Replit.
 
-**Key file map for the work that just landed:**
-- Checkout signing → `server/services/checkout.ts` (lines ~150-204 for `handleCheckoutCompleted`, ~207-262 for new `handleCheckoutFailed`, `import crypto from "crypto"` at line 10)
-- Stripe webhook dispatch → `server/routes.ts` (search for `/api/v1/webhooks/stripe`, the switch is around line 4949-4958 with the new `checkout.session.expired` case)
-- API key lookup for signing → `server/storage.ts` `getApiKey(id)` (line 854) — returns the row with `apiSecret`
-- Partner-side verification pattern (for reference) → businessblueprint.io `server/routes/convert.ts` uses `SWIPESBLUE_WEBHOOK_SECRET` to recompute and compare
+**Key file map for today's work:**
+- Homepage copy + differentiator grid → `client/src/pages/Home.tsx`
 
 **Universal-rules reminders for swipesblue specifically:**
 - TRIADBLUE.COM is always ALL CAPS. swipesblue.com is always lowercase. Do not mix cases anywhere in UI copy or docs.
@@ -199,3 +202,4 @@ These are internal to SwipesBlue only. They never appear in any other repo, neve
 - No placeholder content ("Lorem ipsum", stock filler copy, etc.).
 - Footer copyright currently reads "swipesblue, inc." — per brand rules it should be "TRIADBLUE, Inc." This is listed in PENDING above.
 - Audience is Gen X / SMB owners who built real businesses without technology. Copy speaks like a trusted advisor, plain language, no jargon. Don't write "seamless", "robust", "powerful", etc.
+- The word **eXperience** has exactly one correct spelling. Lowercase e, capital X, lowercase perience. No exceptions anywhere — code, comments, commit messages, CLAUDE.md, conversation.
