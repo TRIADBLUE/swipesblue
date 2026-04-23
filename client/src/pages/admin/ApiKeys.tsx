@@ -67,7 +67,7 @@ export default function ApiKeys() {
     { id: "manage_merchants", label: "Manage Merchants" },
   ];
 
-  const { data: apiKeys, isLoading } = useQuery({
+  const { data: apiKeys, isLoading } = useQuery<ApiKey[]>({
     queryKey: ["/api/v1/api-keys"],
   });
 

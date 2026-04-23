@@ -1,5 +1,5 @@
 # CLAUDE.md — swipesblue.com
-# Last updated: April 20, 2026
+# Last updated: April 23, 2026
 
 ---
 
@@ -128,19 +128,16 @@ These are internal to SwipesBlue only. They never appear in any other repo, neve
 - Landing page, pricing, register, login, legal pages ✓
 - Homepage eXperience repositioning ✓ (2026-04-20)
 - `scansblue` added as a recognized platform across admin UI + server-side validation ✓ (commits `d7627fe`, `d9f0dac`)
+- **`client/index.html` migrated to cdn.triadblue.com for favicons, apple-touch-icon, og:image, twitter:image** ✓ (2026-04-23). Static HTML now references `logo-image-32px.png` / `logo-image-180px.png` / `og-image.png` / `twitter-image.png` on the CDN. All 15 brand image variants uploaded to `/var/www/cdn/brands/swipesblue/` (sized logos 16/32/48/180/192/512px + icon/avatar, header-logo[-dark], login-logo, logo-full-mark, favicon, twitter-image mirror of og-image).
+- **Static HTML meta copy aligned with 2026-04-20 eXperience hero** ✓ (2026-04-23). `<title>`, `og:title`, `twitter:title` all read `swipesblue.com — built with eXperience. Because we are.`; all three descriptions read `A payment gateway for SMBs.`; full-URL brand rule applied (swipesblue.com, never bare "swipesblue"); stale "Built on NMI's PCI Level 1 certified infrastructure" reference removed from `<meta name="description">`.
+- **OGA embed endpoint switched from `console.blue` → `triadblue.systems`** ✓ (2026-04-23, line 27 of index.html).
+- **All 16 pre-existing TypeScript errors eliminated** ✓ (2026-04-23). `useQuery<T>` generics added across `AdminDashboard.tsx` (3 queries + 3 new inline interfaces), `AdminTransactions.tsx`, `ApiKeys.tsx`, `Merchants.tsx`, `Webhooks.tsx`. `server/db.ts` uses `InstanceType<typeof PgPool>` to express the type. `server/replit_integrations/batch/utils.ts` imports `AbortError` as a named export from `p-retry` and uses it directly instead of `pRetry.AbortError`.
 
 ## PENDING
 
 ### CRITICAL — verify before trusting signed forwarding in production
 - **`SWIPESBLUE_WEBHOOK_SECRET` roundtrip check for businessblueprint.io** — the signed forwarding shipped today (`e9068d5`) will only work if businessblueprint.io's `SWIPESBLUE_WEBHOOK_SECRET` Railway env var is EXACTLY equal to the `apiSecret` column value in SwipesBlue's `api_keys` row for the BP key. Mismatched secrets fail silently: SwipesBlue forwards a valid signature, BP recomputes with a different secret, BP rejects every event. Before relying on this in production, open the BP API key in the SwipesBlue admin panel, copy its `apiSecret`, and confirm it matches BP's env var. Do the same for any other partner that uses `webhookUrl` forwarding (scansblue when it comes online, etc.).
-- **16 pre-existing TypeScript errors** (NOT introduced by today's work, but blocking clean builds). They've been there since at least `e9068d5`'s parent and do not prevent `tsx`-based dev or the Replit build from running:
-  - `client/src/pages/admin/AdminDashboard.tsx` — 7 errors: `{}` return type from `useQuery` means `platformBreakdown`, `merchantStats`, `totalProcessed`, `thisMonth`, `successRate`, array methods, and `.slice` are all "does not exist on type `{}`". Needs query generic types.
-  - `client/src/pages/admin/AdminTransactions.tsx:95` — same pattern, `.filter on {}`.
-  - `client/src/pages/admin/ApiKeys.tsx:206/213` — `.length` / `.map` on `{}`.
-  - `client/src/pages/admin/Merchants.tsx:80` — `.filter on {}`.
-  - `client/src/pages/admin/Webhooks.tsx:269/276` — `.length` / `.map` on `{}`.
-  - `server/db.ts:17` — `PgPool` used as a type but imported as a value. Should be `typeof PgPool` or switch to the `Pool` type import from `pg`.
-  - `server/replit_integrations/batch/utils.ts:99/140` — `AbortError` property missing on the imported `p-retry` function. Library typing issue; either typecast or upgrade.
+- ~~**16 pre-existing TypeScript errors**~~ — all 16 eliminated 2026-04-23 (see COMPLETED).
 
 ### Other pending
 - **`POST /api/v1/checkout/sessions` endpoint** — built and shipping (`002a409`). Previously listed as "NEEDS BUILDING" in older CLAUDE.md versions; that was stale. Scansblue can consume it now.
@@ -155,6 +152,7 @@ These are internal to SwipesBlue only. They never appear in any other repo, neve
 
 | Date | Changes |
 |------|---------|
+| 2026-04-23 | **`client/index.html` fully migrated to OGA + CDN + new eXperience positioning, and all 16 pre-existing TypeScript errors eliminated.** (1) Favicon, apple-touch-icon, og:image, twitter:image on lines 6/7/13/18 now point at `https://cdn.triadblue.com/brands/swipesblue/{logo-image-32px,logo-image-180px,og-image,twitter-image}.png`. (2) OGA embed endpoint switched from `console.blue` → `triadblue.systems` (line 27). (3) `<title>`, `og:title`, `twitter:title` (lines 8/11/16) updated to `swipesblue.com — built with eXperience. Because we are.` — aligns static HTML with the 2026-04-20 hero repositioning, applies the "complete URL, never just the name" brand rule, and removes the stale `swipesblue —` bare-name form. (4) `description`, `og:description`, `twitter:description` (lines 9/12/17) all set to `A payment gateway for SMBs.` — strips the stale "Built on NMI's PCI Level 1 certified infrastructure" reference and the legacy "Simple payment processing for small businesses and developers" copy. (5) 15 brand image variants generated from `/Users/Shared/global assets/logo images and texts/swipesblue-com/swipesblue logo image.png` (3072×3072 source) via `sips` and uploaded to `/var/www/cdn/brands/swipesblue/` on the Kamatera CDN server: sized logos at 16/32/48/180/192/512px + icon (256) + avatar (200), header-logo / header-logo-dark / login-logo / logo-full-mark (copies of `swipesblue_logo_image_and_text_as_url.png`, 2076×240), static-fallback `favicon.png` (= 32px variant), `twitter-image.png` (mechanical mirror of `og-image.png` bytes), plus a drift-check re-upload of `logo-image.png`. (6) **All 16 TS errors eliminated** — `useQuery<T>()` generics on all 5 admin pages (AdminDashboard uses 3 new inline interfaces for `DashboardMetrics` / `RecentTransaction` / `VolumePoint`; others reuse their existing local interfaces `Transaction` / `ApiKey` / `Merchant` / `WebhookEndpoint`); `server/db.ts:17` switched `PgPool` type reference to `InstanceType<typeof PgPool>` (no new imports); `server/replit_integrations/batch/utils.ts:4,99,140` imports `AbortError` as a named export from `p-retry` and uses it directly instead of `pRetry.AbortError`. (7) Rule saved to memory: all TRIADBLUE brand names must appear as the complete URL form (`swipesblue.com`, `hostsblue.com`, `TRIADBLUE.COM`, etc.) in every customer-facing text slot — `<title>`, og/twitter titles, og:site_name, site-name OGA slot, hero subcopy, footer copyright; never the bare short name. |
 | 2026-01-31 | HMAC-SHA256 webhook signature verification added for partner-registered webhooks (`server/services/webhook.ts`). Test webhook endpoint wired. |
 | 2026-03-XX | Checkout sessions API built — `POST /api/v1/checkout/sessions` with redirect + embedded modes (commit `002a409`). Embedded page at `/pay/:id` using Stripe Elements. |
 | 2026-04-02 | Ecosystem footer prompt written. Footer ecosystem column identified as needing logo images + official taglines. Checkout sessions endpoint (previously listed as blocker for scansblue) confirmed already built. |

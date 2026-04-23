@@ -14,7 +14,7 @@ if (!process.env.DATABASE_URL) {
 
 const isNeon = process.env.DATABASE_URL.includes('neon.tech');
 
-let pool: NeonPool | PgPool;
+let pool: NeonPool | InstanceType<typeof PgPool>;
 let db: ReturnType<typeof drizzleNeon> | ReturnType<typeof drizzlePg>;
 
 if (isNeon) {

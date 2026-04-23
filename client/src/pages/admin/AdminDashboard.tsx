@@ -24,6 +24,30 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 
+interface DashboardMetrics {
+  totalProcessed?: string;
+  thisMonth?: string;
+  successRate?: string;
+  platformBreakdown?: Array<{ name: string; value: number; color: string }>;
+  merchantStats?: { active: number; pending: number; suspended: number };
+}
+
+interface RecentTransaction {
+  id: string;
+  customerName?: string;
+  status: string;
+  platform: string;
+  createdAt: string;
+  amount: string;
+  cardBrand?: string;
+  cardLastFour?: string;
+}
+
+interface VolumePoint {
+  date: string;
+  amount: number;
+}
+
 function StatCard({
   title,
   value,
@@ -83,15 +107,15 @@ function StatCard({
 }
 
 export default function AdminDashboard() {
-  const { data: metrics, isLoading: metricsLoading } = useQuery({
+  const { data: metrics, isLoading: metricsLoading } = useQuery<DashboardMetrics>({
     queryKey: ["/api/admin/metrics"],
   });
 
-  const { data: recentTransactions, isLoading: transactionsLoading } = useQuery({
+  const { data: recentTransactions, isLoading: transactionsLoading } = useQuery<RecentTransaction[]>({
     queryKey: ["/api/admin/transactions/recent"],
   });
 
-  const { data: volumeData, isLoading: volumeLoading } = useQuery({
+  const { data: volumeData, isLoading: volumeLoading } = useQuery<VolumePoint[]>({
     queryKey: ["/api/admin/volume"],
   });
 

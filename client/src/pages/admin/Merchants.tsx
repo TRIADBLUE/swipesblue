@@ -51,7 +51,7 @@ export default function Merchants() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: merchants, isLoading } = useQuery({
+  const { data: merchants, isLoading } = useQuery<Merchant[]>({
     queryKey: ["/api/v1/merchants"],
   });
 

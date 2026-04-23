@@ -79,7 +79,7 @@ export default function Webhooks() {
     { id: "merchant.suspended", label: "Merchant Suspended" },
   ];
 
-  const { data: webhooks, isLoading } = useQuery({
+  const { data: webhooks, isLoading } = useQuery<WebhookEndpoint[]>({
     queryKey: ["/api/admin/webhooks"],
   });
 

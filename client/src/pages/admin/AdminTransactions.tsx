@@ -63,7 +63,7 @@ export default function AdminTransactions() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: transactions, isLoading } = useQuery({
+  const { data: transactions, isLoading } = useQuery<Transaction[]>({
     queryKey: ["/api/admin/transactions"],
   });
 
