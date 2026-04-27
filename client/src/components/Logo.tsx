@@ -1,85 +1,18 @@
-import logoIcon from "@assets/swipesblue_logo_1769971645259.png";
+const SWIPESBLUE_LOCKUP = "https://cdn.triadblue.com/brands/swipesblue/logo-image-and-logo-text-as-url.png";
 
 interface LogoProps {
-  variant?: "default" | "small" | "large";
   className?: string;
-  showIcon?: boolean;
-  showUrl?: boolean;
 }
 
-export default function Logo({ 
-  variant = "default", 
-  className = "", 
-  showIcon = false,
-  showUrl = false
-}: LogoProps) {
-  // Logo text is always 30px per brand spec
-  // Icon extends 15% above and 15% below text (30px * 1.3 = 39px)
-  const fontSize = "30px";
-  const iconSize = "h-[39px] w-auto";
-  
-  // Text shadow effects: black shadow (1px offset) + white glow (100px blur at 10% opacity)
-  const swipesTextShadow = `
-    1px 1px 0px #000000,
-    0px 0px 100px rgba(255, 255, 255, 0.1),
-    0px 0px 100px rgba(255, 255, 255, 0.1)
-  `;
-  
-  const blueTextShadow = `
-    1px 1px 0px #000000,
-    0px 0px 100px rgba(255, 255, 255, 0.1),
-    0px 0px 100px rgba(255, 255, 255, 0.1)
-  `;
-  
+export default function Logo({ className = "" }: LogoProps) {
   return (
-    <div className={`flex items-center gap-2 ${className}`} data-testid="logo-container">
-      {/* Icon - only show when showIcon is true */}
-      {showIcon && (
-        <img 
-          src={logoIcon} 
-          alt="" 
-          className={iconSize}
-          data-testid="img-logo-icon"
-        />
-      )}
-      
-      {/* Company Name with font styling */}
-      <div className="flex items-baseline" data-testid="company-name">
-        <span 
-          className="font-archivo-semi-expanded font-bold lowercase"
-          style={{ 
-            color: "#374151",
-            fontSize: fontSize,
-            textShadow: swipesTextShadow,
-            letterSpacing: "0.02em"
-          }}
-        >
-          swipes
-        </span>
-        <span 
-          className="font-archivo-narrow font-bold lowercase"
-          style={{ 
-            color: "#0000FF",
-            fontSize: fontSize,
-            textShadow: blueTextShadow,
-            letterSpacing: "0.02em"
-          }}
-        >
-          blue
-        </span>
-        {showUrl && (
-          <span 
-            className="font-archivo font-bold lowercase"
-            style={{ 
-              color: "#10B981",
-              fontSize: fontSize,
-              letterSpacing: "-0.02em"
-            }}
-          >
-            .com
-          </span>
-        )}
-      </div>
+    <div className={`flex items-center ${className}`} data-testid="logo-container">
+      <img
+        src={SWIPESBLUE_LOCKUP}
+        alt="swipesblue.com"
+        className="h-[39px] w-auto"
+        data-testid="img-logo"
+      />
     </div>
   );
 }

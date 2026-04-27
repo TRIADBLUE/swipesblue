@@ -141,7 +141,7 @@ export default function Footer() {
           <div className="pl-8">
             {/* TRIADBLUE.COM ECOSYSTEM — always first, always largest */}
             <div className="mb-6">
-              <img src="/images/logos/triadblue-ecosystem-logo.png" alt="TRIADBLUE.COM ECOSYSTEM" style={{ height: 40, objectFit: 'contain' }} />
+              <img src="https://cdn.triadblue.com/brands/triadblue/ecosystem-lockup.png" alt="TRIADBLUE.COM ECOSYSTEM" style={{ height: 40, objectFit: 'contain' }} />
               <p className="text-xs mt-2" style={{ color: '#6B7280' }}>Six Platforms. One Ecosystem. Go Blue.</p>
             </div>
 
@@ -151,33 +151,33 @@ export default function Footer() {
             <div className="space-y-4">
               <div>
                 <a href="https://businessblueprint.io" target="_blank" rel="noopener noreferrer">
-                  <img src="/images/logos/bb-header-logo.png" alt="businessblueprint.io" style={{ height: 22, objectFit: 'contain' }} />
+                  <img src="https://cdn.triadblue.com/brands/businessblueprint/logo-image-and-logo-text-as-url.png" alt="businessblueprint.io" style={{ height: 22, objectFit: 'contain' }} />
                 </a>
                 <p className="text-xs mt-1" style={{ color: '#6B7280' }}>Get Assessed. Get Prescribed. Get Business.</p>
               </div>
 
               <div>
-                <img src="/images/logos/swipesblue_logo_image_and_text_as_url.png" alt="swipesblue.com" style={{ height: 32, objectFit: 'contain' }} />
+                <img src="https://cdn.triadblue.com/brands/swipesblue/logo-image-and-logo-text-as-url.png" alt="swipesblue.com" style={{ height: 32, objectFit: 'contain' }} />
                 <p className="text-sm mt-2" style={{ color: '#6B7280' }}>Go Blue. Get Swiped. Get Paid.</p>
               </div>
 
               <div>
                 <a href="https://hostsblue.com" target="_blank" rel="noopener noreferrer">
-                  <img src="/images/logos/hostsblue_logo_image_and_text_as_url.png" alt="hostsblue.com" style={{ height: 22, objectFit: 'contain' }} />
+                  <img src="https://cdn.triadblue.com/brands/hostsblue/logo-image-and-logo-text-as-url.png" alt="hostsblue.com" style={{ height: 22, objectFit: 'contain' }} />
                 </a>
                 <p className="text-xs mt-1" style={{ color: '#6B7280' }}>Go Blue. Get Site. Go Live.</p>
               </div>
 
               <div>
                 <a href="https://scansblue.com" target="_blank" rel="noopener noreferrer">
-                  <img src="/images/logos/scansblue_logo_image_and_text_as_url.png" alt="scansblue.com" style={{ height: 22, objectFit: 'contain' }} />
+                  <img src="https://cdn.triadblue.com/brands/scansblue/logo-image-and-logo-text-as-url.png" alt="scansblue.com" style={{ height: 22, objectFit: 'contain' }} />
                 </a>
                 <p className="text-xs mt-1" style={{ color: '#6B7280' }}>Go Blue. Get Scanned. Get Scored.</p>
               </div>
 
               <div>
                 <a href="https://builderblue2.com" target="_blank" rel="noopener noreferrer">
-                  <img src="/images/logos/builderblue2-logo-url.png" alt="BUILDERBLUE².COM" style={{ height: 22, objectFit: 'contain' }} />
+                  <img src="https://cdn.triadblue.com/brands/builderblue2/logo-image-and-logo-text-as-url.png" alt="BUILDERBLUE².COM" style={{ height: 22, objectFit: 'contain' }} />
                 </a>
                 <p className="text-xs mt-1" style={{ color: '#6B7280' }}>Go Blue. Get Vibed. Get Ahead.</p>
               </div>

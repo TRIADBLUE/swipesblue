@@ -56,7 +56,7 @@ export default function Login() {
       <header className="bg-white border-b border-gray-100 py-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <Link href="/" data-testid="link-home-logo">
-            <Logo showIcon variant="default" />
+            <Logo />
           </Link>
         </div>
       </header>

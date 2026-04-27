@@ -242,7 +242,7 @@ export default function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center gap-4">
         {/* Left: Logo */}
         <Link href="/" className="flex items-center flex-shrink-0" data-testid="link-logo-home">
-          <Logo showIcon variant="default" />
+          <Logo />
         </Link>
 
         {/* Right-aligned: Nav + Auth actions as one continuous row */}
